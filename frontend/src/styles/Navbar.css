@@ -1,0 +1,19 @@
+.navbar-container {
+  margin-top: 4%;
+}
+
+.navbar-container .nav-menu {
+  display: flex;
+  flex-direction: row;
+  gap: 100px;
+  list-style-type: none;
+  padding-left: 0;
+  margin-left: 0;
+  align-self: center;
+  justify-content: center;
+}
+
+.navbar-container .nav-menu .nav-item a {
+  text-decoration: none;
+  color: #333;
+}

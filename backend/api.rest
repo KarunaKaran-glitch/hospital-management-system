@@ -1,0 +1,51 @@
+POST http://localhost:5001/patients
+Content-Type: application/json
+
+{
+    "patientName": "Karunakaran",
+    "dateOfBirth": "2003/06/30",
+    "address": "Valangaiman",
+    "contactNumber": "1234567890",
+    "gender": "M",
+    "bloodGroup": "O+",
+    "weight": "77",
+    "height": "172"
+}
+
+###
+GET http://localhost:5001/patients/p00013
+
+###
+PUT http://localhost:5001/patients/p00012
+Content-Type: application/json
+
+{
+    "patientName":"Will Wheaton"
+}
+###
+GET http://localhost:5001/doctors/
+
+###
+GET http://localhost:5001/doctors/d005
+
+###
+POST http://localhost:5001/doctors
+Content-Type: application/json
+
+{
+    "doctorName": "geroge",
+    "doctorSpecialist": "ortho",
+    "contactNumber": "3456789212",
+    "address": "Nagarkovil"
+}
+
+###
+PUT http://localhost:5001/doctors/d003
+Content-Type: application/json
+
+{
+    "doctorName": "pragadeesh"
+}
+
+###
+DELETE http://localhost:5001/doctors/d001
