@@ -315,7 +315,7 @@ Address: ${patient.patient_address || "N/A"}`);
 
   const handleViewDoctor = (doctor) => {
     console.log("View doctor details:", doctor);
-      alert(`Doctor Details:\n
+    alert(`Doctor Details:\n
 ID: ${doctor.doctor_id}
 Name: ${doctor.doctor_name || "N/A"}
 Specialization: ${doctor.doctor_specialization || "N/A"}
@@ -323,63 +323,66 @@ DOB: ${formatDate(doctor.doctor_date_of_birth) || "N/A"}
 Contact: ${doctor.doctor_contact || "N/A"}
 Address: ${doctor.doctor_address || "N/A"}
 Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
-};
-
+  };
 
   const handleEditDoctor = (doctor) => {
-  console.log("Editing doctor:", doctor);
-  
-  // Set form data with correct field names based on your API response
-  setDoctorForm({
-    doctorId: doctor.doctor_id,
-    doctorName: doctor.doctor_name || "",
-    dateOfBirth: doctor.doctor_dob ? doctor.doctor_dob.split('T')[0] : "",
-    specialization: doctor.doctor_specialization || "",
-    contactNumber: doctor.doctor_contact || "",
-    gender: doctor.doctor_gender || "",
-    address: doctor.address || "",
-    isAvailable: Boolean(doctor.doctor_is_available),
-  });
-  
-  // Show form and scroll to it
-  setShowDoctorForm(true);
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  
-  // Update UI to indicate editing mode
-  setDoctorSuccess("Editing doctor: " + doctor.doctor_name);
-};
+    console.log("Editing doctor:", doctor);
 
-
- const handleDeleteDoctor = async (doctorId) => {
-  if (!window.confirm("Are you sure you want to delete this doctor?")) {
-    return;
-  }
-  
-  try {
-    setLoading(true);
-    const response = await fetch(`${SERVER_URL}/doctors/${doctorId}`, {
-      method: "DELETE",
+    // Set form data with correct field names based on your API response
+    setDoctorForm({
+      doctorId: doctor.doctor_id,
+      doctorName: doctor.doctor_name || "",
+      dateOfBirth: doctor.doctor_dob ? doctor.doctor_dob.split("T")[0] : "",
+      specialization: doctor.doctor_specialization || "",
+      contactNumber: doctor.doctor_contact || "",
+      gender: doctor.doctor_gender || "",
+      address: doctor.address || "",
+      isAvailable: Boolean(doctor.doctor_is_available),
     });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+
+    // Show form and scroll to it
+    setShowDoctorForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Update UI to indicate editing mode
+    setDoctorSuccess("Editing doctor: " + doctor.doctor_name);
+  };
+
+  const handleDeleteDoctor = async (doctorId) => {
+    if (!window.confirm("Are you sure you want to delete this doctor?")) {
+      return;
     }
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      alert("Doctor deleted successfully");
-      fetchDoctors();
-    } else {
-      alert(`Failed to delete doctor: ${data.message || "Unknown error"}`);
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${SERVER_URL}/doctors/${doctorId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("Doctor deleted successfully");
+        fetchDoctors();
+      } else {
+        alert(`Failed to delete doctor: ${data.message || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error deleting doctor:", error);
+      alert("Failed to delete doctor. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error deleting doctor:", error);
-    alert("Failed to delete doctor. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
   return (
     <div className="dashboard-container">
@@ -840,6 +843,12 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
             </div>
           </div>
         )}
+      </div>
+
+      <div className="logout-container">
+        <button className="logout-button" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt"></i> Logout
+        </button>
       </div>
     </div>
   );

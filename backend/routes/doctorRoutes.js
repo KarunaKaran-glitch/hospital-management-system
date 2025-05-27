@@ -262,4 +262,6 @@ doctorRoutes.delete("/:id", async (req, res) => {
   }
 });
 
+
+
 export default doctorRoutes;

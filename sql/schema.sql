@@ -40,7 +40,7 @@ create table if not exists visit (
 
 -- Mock data for patient table
 INSERT INTO patient (patient_id, patient_name, patient_dob, patient_address, patient_contact, patient_gender, patient_blood_group, patient_height, patient_weight, patient_updated_at) VALUES
-('p00001', 'John Doe', '1985-06-15', '123 Main St, Anytown', '1234567890', 'M', 'O+', 175.0, 70.5, NOW()),
+('p00001', 'John Doe', '1985-06-14', '123 Main St, Anytown', '1234567890', 'M', 'O+', 175.0, 70.5, NOW()),
 ('p00002', 'Jane Smith', '1990-02-20', '456 Oak Ave, Anytown', '2345678901', 'F', 'A-', 162.5, 55.2, NOW()),
 ('p00003', 'Alice Johnson', '1978-11-30', '789 Pine Rd, Anytown', '3456789012', 'F', 'B+', 168.0, 65.0, NOW()),
 ('p00004', 'Robert Brown', '2000-07-10', '101 Maple Dr, Anytown', '4567890123', 'M', 'AB-', 180.3, 80.1, NOW()),

@@ -13,7 +13,7 @@ visitRoutes.get("/", async (req, res) => {
   }
 });
 
-visitRoutes.get("/:doctorId", async (req, res) => {
+visitRoutes.get("/doctor/:doctorId/allPending", async (req, res) => {
   try {
     const { doctorId } = req.params;
 
@@ -60,14 +60,122 @@ visitRoutes.get("/:doctorId", async (req, res) => {
   }
 });
 
+visitRoutes.get("/doctor/:doctorId/today", async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    // Verify doctor exists
+    const isDoctorQuery = await pool.query(
+      `SELECT * FROM doctor WHERE doctor_id = $1`,
+      [doctorId]
+    );
+
+    if (isDoctorQuery.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+
+    // Use PostgreSQL's DATE function to compare only the date part
+    const todayVisitsQuery = await pool.query(
+      `
+      SELECT v.*, p.patient_name 
+      FROM visit v
+      JOIN patient p ON v.patient_id = p.patient_id
+      WHERE v.doctor_id = $1 
+      AND DATE(v.date_of_visit) = CURRENT_DATE
+      ORDER BY v.date_of_visit ASC
+      `,
+      [doctorId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Today's appointments retrieved successfully",
+      data: todayVisitsQuery.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching today's appointments:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+});
+
+visitRoutes.get("/doctor/:doctorId/upcoming", async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    // Verify doctor exists
+    const isDoctorQuery = await pool.query(
+      `SELECT * FROM doctor WHERE doctor_id = $1`,
+      [doctorId]
+    );
+
+    if (isDoctorQuery.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+
+    // Use PostgreSQL's DATE function to get future dates only
+    const upcomingVisitsQuery = await pool.query(
+      `
+      SELECT v.*, p.patient_name 
+      FROM visit v
+      JOIN patient p ON v.patient_id = p.patient_id
+      WHERE v.doctor_id = $1 
+      AND DATE(v.date_of_visit) > CURRENT_DATE
+      AND v.visit_status = 'pending'
+      ORDER BY v.date_of_visit ASC
+      `,
+      [doctorId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Upcoming appointments retrieved successfully",
+      data: upcomingVisitsQuery.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching upcoming appointments:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+});
+
 visitRoutes.post("/", async (req, res) => {
   try {
     const { patientId, doctorId, dateOfVisit } = req.body;
-
     if (!patientId || !doctorId || !dateOfVisit) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
+      });
+    }
+
+    let parsedDate;
+    try {
+      parsedDate = new Date(dateOfVisit);
+
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error("Invalid date format");
+      }
+
+      parsedDate = parsedDate.toISOString();
+      console.log("Formatted date for DB:", parsedDate);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid date format. Please provide date in YYYY-MM-DD HH:MM format or ISO format.",
       });
     }
 
@@ -116,7 +224,7 @@ visitRoutes.post("/", async (req, res) => {
       VALUES ($1, $2, $3, 'pending')
       RETURNING *
       `,
-      [patientId, doctorId, dateOfVisit]
+      [patientId, doctorId, parsedDate]
     );
 
     if (appointmentCreationQuery.rowCount === 1) {
@@ -131,6 +239,9 @@ visitRoutes.post("/", async (req, res) => {
       message: "Appointment creation failed",
     });
   } catch (error) {
+    console.log("====================================");
+    console.log(error);
+    console.log("====================================");
     return res.status(500).json({
       success: false,
       message: "Server error",

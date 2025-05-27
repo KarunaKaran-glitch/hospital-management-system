@@ -71,9 +71,6 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:5001/visits/d006
-
-###
 
 POST http://localhost:5001/visits
 Content-Type: application/json
@@ -93,3 +90,24 @@ Content-Type: application/json
     "doctorId": "d001",
     "doctorDateOfBirth": "15/06/1985"
 }
+###
+GET http://localhost:5001/visits/doctor/d004/allPending
+
+###
+GET http://localhost:5001/visits/doctor/d004/today
+
+###
+GET http://localhost:5001/visits/
+
+###
+POST http://localhost:5001/visits/
+Content-Type: application/json
+
+{
+    "patientId": "p00012",
+    "doctorId": "d004",
+    "dateOfVisit": "2025/06/27"
+}
+
+
+

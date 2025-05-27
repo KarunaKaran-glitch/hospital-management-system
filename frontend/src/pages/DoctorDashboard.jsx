@@ -32,7 +32,7 @@ export default function DoctorDashboard() {
     }
 
     fetchAppointments();
-  }, [navigate]); // Added navigate to dependency array
+  }, []); // Added navigate to dependency array
 
   const fetchAppointments = async () => {
     try {
@@ -44,6 +44,7 @@ export default function DoctorDashboard() {
 
       // Fetch today's appointments
       const todayResponse = await fetch(
+        
         `${SERVER_URL}/visits/doctor/${userData.doctorId}/today`
       );
 
