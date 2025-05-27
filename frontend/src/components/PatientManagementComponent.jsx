@@ -3,19 +3,15 @@ import { Link } from "react-router-dom";
 import PatientTable from "../components/PatientTable";
 import "../styles/PageStyles.css";
 
-export default function PatientsPage() {
+export default function PatientManagementComponent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [totalPatients, setTotalPatients] = useState(0);
 
   useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      setTotalPatients(32); // This would come from your API in a real app
-    }, 800);
+    const fetchReports = async () => {};
 
-    return () => clearTimeout(timer);
+    fetchReports();
   }, []);
 
   return (

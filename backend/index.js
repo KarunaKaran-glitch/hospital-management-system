@@ -6,6 +6,7 @@ import patientRoutes from "./routes/patientRoutes.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import visitRoutes from "./routes/visitRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import loginRoutes from "./routes/loginRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
   res.send("Hello");
 });
 
+app.use("/login", loginRoutes);
 app.use("/patients", patientRoutes);
 app.use("/doctors", doctorRoutes);
 app.use("/visits", visitRoutes);

@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import SERVER_URL from "../lib/constants.js";
+
 import "../styles/LoginPage.css";
 
 export default function LoginPage() {
@@ -19,44 +22,111 @@ export default function LoginPage() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Basic validation
     if (!formData.role || !formData.loginId || !formData.password) {
       setError("All fields are required");
       return;
     }
 
-    // Example login logic
+    let response;
+
     if (formData.role === "patient") {
-      // For patients, check if password is a valid date
-      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-      if (!datePattern.test(formData.password)) {
-        setError(
-          "Patient password should be in YYYY-MM-DD format (date of birth)"
+      try {
+        response = await fetch(`${SERVER_URL}/login/${formData.role}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            patientId: formData.loginId,
+            patientDateOfBirth: new Date(formData.password).toLocaleDateString(
+              "en-IN"
+            ),
+          }),
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setError(data.message);
+          return;
+        }
+
+        // Store patient data in localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            role: "patient",
+            patientId: formData.loginId,
+            patientName: data.data?.patientName || "Patient",
+            isLoggedIn: true,
+          })
         );
-        return;
-      }
-    }
 
-    // In a real app, you would make an API call to verify credentials
-    console.log("Login attempt:", formData);
-
-    // Redirect based on role
-    switch (formData.role) {
-      case "admin":
-        navigate("/admin/dashboard");
-        break;
-      case "doctor":
-        navigate("/doctor/dashboard");
-        break;
-      case "patient":
         navigate("/patient/dashboard");
-        break;
-      default:
-        setError("Invalid role selected");
+      } catch (error) {
+        console.error("Login error:", error);
+        setError("An error occurred during login. Please try again.");
+      }
+    } else if (formData.role === "doctor") {
+      try {
+        response = await fetch(`${SERVER_URL}/login/${formData.role}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            doctorId: formData.loginId,
+            doctorDateOfBirth: new Date(formData.password).toLocaleDateString(
+              "en-IN"
+            ),
+          }),
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setError(data.message);
+          return;
+        }
+
+        // Store doctor data in localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            role: "doctor",
+            doctorId: formData.loginId,
+            doctorName: data.data?.doctorName || "Doctor",
+            specialization: data.data?.doctorSpecialist,
+            isLoggedIn: true,
+          })
+        );
+
+        navigate("/doctor/dashboard");
+      } catch (error) {
+        console.error("Login error:", error);
+        setError("An error occurred during login. Please try again.");
+      }
+    } else if (
+      formData.role === "admin" &&
+      formData.loginId === "admin" &&
+      formData.password === "admin"
+    ) {
+      // Store admin data in localStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          role: "admin",
+          adminId: "admin",
+          adminName: "Administrator",
+          isLoggedIn: true,
+        })
+      );
+
+      navigate("/admin/dashboard");
+    } else {
+      setError("Invalid credentials");
     }
   };
 
@@ -68,7 +138,7 @@ export default function LoginPage() {
 
         {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="login-form">
+        <form onSubmit={handleLogin} className="login-form">
           <div className="form-group">
             <label htmlFor="role">Select Role</label>
             <select
@@ -106,31 +176,39 @@ export default function LoginPage() {
 
           <div className="form-group">
             <label htmlFor="password">
-              {formData.role === "patient"
+              {formData.role === "patient" || formData.role === "doctor"
                 ? "Date of Birth (YYYY-MM-DD)"
                 : "Password"}
             </label>
             <input
-              type={formData.role === "patient" ? "date" : "password"}
+              type={
+                formData.role === "patient" || formData.role === "doctor"
+                  ? "date"
+                  : "password"
+              }
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder={
-                formData.role === "patient" ? "YYYY-MM-DD" : "••••••••"
+                formData.role === "patient" || formData.role === "doctor"
+                  ? "DD-MM-YYYY"
+                  : "••••••••"
               }
               className="form-control"
             />
           </div>
 
-          <button type="submit" className="login-button">
+          <button className="login-button" type="submit">
             Login
           </button>
         </form>
 
-        {formData.role === "patient" && (
+        {(formData.role === "patient" || formData.role === "doctor") && (
           <div className="help-text">
-            <p>Patients: Use your Patient ID and Date of Birth to login</p>
+            <p>{`${
+              formData.role.charAt(0).toUpperCase() + formData.role.slice(1)
+            }: Use your ${formData.role} ID and Date of Birth to login`}</p>
           </div>
         )}
       </div>

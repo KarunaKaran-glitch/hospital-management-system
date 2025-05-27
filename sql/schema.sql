@@ -14,7 +14,8 @@ create table if not exists patient (
 create table if not exists doctor (
     doctor_id varchar(4) primary key check(doctor_id like 'd%' and LENGTH(doctor_id) = 4),
     doctor_name varchar(255) not null,
-    doctor_specalist varchar(255) not null,
+    doctor_specialization varchar(255) not null,
+    doctor_date_of_birth date not null,
     doctor_contact varchar(10) check(LENGTH(doctor_contact) = 10) not null,
     doctor_address varchar(255) not null,
     doctor_is_available boolean not null
@@ -33,7 +34,7 @@ create table if not exists visit (
     doctor_id varchar(4) references doctor(doctor_id) not null,
     date_of_visit timestamp not null,
     visit_status varchar(20) check(visit_status in ('pending','visited','missed','cancelled')) not null,
-    report_id varchar(11) references report(report_id) not null,
+    report_id varchar(11) references report(report_id),
     primary key(patient_id,doctor_id,date_of_visit)
 );
 
@@ -53,17 +54,17 @@ INSERT INTO patient (patient_id, patient_name, patient_dob, patient_address, pat
 ('p00012', 'Kyle Reese', '1980-03-15', '909 Future St, LA', '1000000001', 'M', 'A+', 180.0, 75.0, NOW());
 
 -- Mock data for doctor table
-INSERT INTO doctor (doctor_id, doctor_name, doctor_specalist, doctor_contact, doctor_address, doctor_is_available) VALUES
-('d001', 'Dr. Alan Turing', 'Cardiology', '1122334455', '1 Hospital Rd, Medcity', true),
-('d002', 'Dr. Ada Lovelace', 'Pediatrics', '2233445566', '2 Clinic Ave, Medcity', false),
-('d003', 'Dr. Charles Babbage', 'Neurology', '3344556677', '3 Health St, Medcity', true),
-('d004', 'Dr. Grace Hopper', 'Oncology', '4455667788', '4 Wellness Blvd, Medcity', true),
-('d005', 'Dr. Tim Berners-Lee', 'Orthopedics', '5566778899', '5 Cure Ln, Medcity', false),
-('d006', 'Dr. Margaret Hamilton', 'Dermatology', '6677889900', '6 Remedy Way, Medcity', true),
-('d007', 'Dr. John von Neumann', 'General Medicine', '7788990011', '7 Care Ct, Medcity', true),
-('d008', 'Dr. Hedy Lamarr', 'ENT', '8899001122', '8 Healing Dr, Medcity', false),
-('d009', 'Dr. Donald Knuth', 'Pulmonology', '9900112233', '9 Life Pl, Medcity', true),
-('d010', 'Dr. Radia Perlman', 'Gastroenterology', '0011223344', '10 Vitality Sq, Medcity', true);
+INSERT INTO doctor (doctor_id, doctor_name, doctor_specalist, doctor_date_of_birth, doctor_contact, doctor_address, doctor_is_available) VALUES
+('d001', 'Dr. Alan Turing', 'Cardiology', '1912-06-23', '1122334455', '1 Hospital Rd, Medcity', true),
+('d002', 'Dr. Ada Lovelace', 'Pediatrics', '1815-12-10', '2233445566', '2 Clinic Ave, Medcity', false),
+('d003', 'Dr. Charles Babbage', 'Neurology', '1791-12-26', '3344556677', '3 Health St, Medcity', true),
+('d004', 'Dr. Grace Hopper', 'Oncology', '1906-12-09', '4455667788', '4 Wellness Blvd, Medcity', true),
+('d005', 'Dr. Tim Berners-Lee', 'Orthopedics', '1955-06-08', '5566778899', '5 Cure Ln, Medcity', false),
+('d006', 'Dr. Margaret Hamilton', 'Dermatology', '1936-08-17', '6677889900', '6 Remedy Way, Medcity', true),
+('d007', 'Dr. John von Neumann', 'General Medicine', '1903-12-28', '7788990011', '7 Care Ct, Medcity', true),
+('d008', 'Dr. Hedy Lamarr', 'ENT', '1914-11-09', '8899001122', '8 Healing Dr, Medcity', false),
+('d009', 'Dr. Donald Knuth', 'Pulmonology', '1938-01-10', '9900112233', '9 Life Pl, Medcity', true),
+('d010', 'Dr. Radia Perlman', 'Gastroenterology', '1951-01-01', '0011223344', '10 Vitality Sq, Medcity', true);
 
 -- Mock data for report table
 -- Ensure patient_id and doctor_id exist from above tables

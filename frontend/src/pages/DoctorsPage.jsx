@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
+import SERVER_URL from "../lib/constants";
+
 import "../styles/PageStyles.css";
 
 export default function DoctorsPage() {
@@ -10,13 +13,8 @@ export default function DoctorsPage() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        // In a real app, fetch from your API
-        const response = await fetch("http://localhost:5001/doctors");
+        const response = await fetch(`${SERVER_URL}/doctors`);
         const data = await response.json();
-        console.log("====================================");
-        console.log(data);
-        console.log("====================================");
-
         setDoctors(data);
         setIsLoading(false);
       } catch (error) {
@@ -28,7 +26,6 @@ export default function DoctorsPage() {
     fetchDoctors();
   }, []);
 
-  // Filter doctors based on search term
   const filteredDoctors = doctors.filter(
     (doctor) =>
       doctor.doctor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||

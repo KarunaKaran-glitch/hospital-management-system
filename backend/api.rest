@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:5001/patients/p00013
+GET http://localhost:5001/patients/p00010
 
 ###
 PUT http://localhost:5001/patients/p00012
@@ -34,7 +34,8 @@ Content-Type: application/json
 
 {
     "doctorName": "geroge",
-    "doctorSpecialist": "ortho",
+    "doctorSpecialization": "ortho",
+    "doctorDateOfBirth": "12/14/2001",
     "contactNumber": "3456789212",
     "address": "Nagarkovil"
 }
@@ -49,3 +50,46 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:5001/doctors/d001
+
+###
+
+POST http://localhost:5001/login/doctor
+Content-Type: application/json
+
+{
+    "doctorId": "d001",
+    "doctorDateOfBirth": "23/6/1912"
+}
+
+###
+POST http://localhost:5001/login/patient
+Content-Type: application/json
+
+{
+    "patientId": "p00001",
+    "patientDateOfBirth": "15/6/1985"
+}
+
+###
+GET http://localhost:5001/visits/d006
+
+###
+
+POST http://localhost:5001/visits
+Content-Type: application/json
+
+{
+    "patientId": "p00010",
+    "doctorId": "d006",
+    "dateOfVisit": "2025/05/25"
+}
+
+###
+
+POST http://localhost:5001/login/doctor
+Content-Type: application/json
+
+{
+    "doctorId": "d001",
+    "doctorDateOfBirth": "15/06/1985"
+}

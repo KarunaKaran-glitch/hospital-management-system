@@ -1,0 +1,263 @@
+/* Dashboard Layout */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.dashboard-header p {
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+/* Tabs */
+.dashboard-tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 30px;
+}
+
+.tab-button {
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tab-button:hover {
+  color: #3498db;
+}
+
+.tab-button.active {
+  color: #3498db;
+}
+
+.tab-button.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #3498db;
+}
+
+/* Content Sections */
+.dashboard-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+}
+
+.appointments-section h2,
+.schedule-section h2,
+.records-section h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 22px;
+}
+
+/* Table Styles */
+.table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.data-table tr:hover {
+  background-color: #f5f7fa;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-scheduled {
+  background-color: #e3f7ed;
+  color: #27ae60;
+}
+
+.status-completed {
+  background-color: #e8f4fd;
+  color: #3498db;
+}
+
+.status-cancelled {
+  background-color: #fbeaea;
+  color: #e74c3c;
+}
+
+/* Form Styles */
+.form-container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+textarea:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #2980b9;
+}
+
+/* Messages */
+.error-message {
+  background-color: #fbeaea;
+  color: #e74c3c;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.success-message {
+  background-color: #e3f7ed;
+  color: #27ae60;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading,
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #7f8c8d;
+}
+
+/* Medical Records */
+.medical-records {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.record-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.record-card:hover {
+  transform: translateY(-5px);
+}
+
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.record-header h3 {
+  color: #2c3e50;
+  font-size: 18px;
+  margin: 0;
+}
+
+.record-date {
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.record-details p {
+  margin: 10px 0;
+  color: #2c3e50;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .dashboard-tabs {
+    flex-direction: column;
+    border-bottom: none;
+  }
+
+  .tab-button {
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .tab-button.active::after {
+    display: none;
+  }
+
+  .tab-button.active {
+    background-color: #f0f7fd;
+  }
+
+  .medical-records {
+    grid-template-columns: 1fr;
+  }
+}

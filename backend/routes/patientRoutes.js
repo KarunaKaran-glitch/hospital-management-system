@@ -8,7 +8,7 @@ patientRoutes.get("/", async (req, res) => {
     const allPatients = await pool.query("SELECT * FROM patient");
     res.status(200).json({
       success: true,
-      message: allPatients.rows,
+      data: allPatients.rows,
     });
   } catch (err) {
     console.error(err.message);
@@ -82,9 +82,6 @@ patientRoutes.post("/", async (req, res) => {
       newPatientId = `p${nextNumericPart.toString().padStart(5, "0")}`;
     }
 
-    const currentTimestamp = new Date();
-
-    // Insert new patient with the generated ID
     const result = await pool.query(
       `INSERT INTO patient (
         patient_id, patient_name, patient_dob, patient_address, 
@@ -101,7 +98,7 @@ patientRoutes.post("/", async (req, res) => {
         bloodGroup,
         height || null,
         weight || null,
-        currentTimestamp,
+        new Date(),
       ]
     );
 

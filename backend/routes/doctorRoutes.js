@@ -8,7 +8,7 @@ doctorRoutes.get("/", async (req, res) => {
     const allDoctors = await pool.query(
       "SELECT * FROM doctor ORDER BY doctor_id"
     );
-    res.json(allDoctors.rows);
+    res.json({ success: true, data: allDoctors.rows });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server error");
@@ -39,14 +39,27 @@ doctorRoutes.get("/:id", async (req, res) => {
 
 doctorRoutes.post("/", async (req, res) => {
   try {
-    const { doctorName, doctorSpecialist, contactNumber, address } = req.body;
+    const {
+      doctorName,
+      doctorSpecialization,
+      contactNumber,
+      address,
+      doctorDateOfBirth,
+      doctorGender,
+    } = req.body;
 
     // Validate required fields
-    if (!doctorName || !doctorSpecialist || !contactNumber || !address) {
+    if (
+      !doctorName ||
+      !doctorSpecialization ||
+      !contactNumber ||
+      !address ||
+      !doctorDateOfBirth ||
+      !doctorGender
+    ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Missing required fields: doctorName, doctorSpecialist, contactNumber, and address are required.",
+        message: "All fields are required",
       });
     }
 
@@ -65,26 +78,34 @@ doctorRoutes.post("/", async (req, res) => {
       newDoctorId = `d${nextNumericPart.toString().padStart(3, "0")}`;
     }
 
-    // Insert new doctor with the generated ID
     const result = await pool.query(
       `INSERT INTO doctor (
-        doctor_id, doctor_name, doctor_specalist, doctor_contact, 
-        doctor_address, doctor_is_available
-      ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        doctor_id, doctor_name, doctor_specialization, doctor_date_of_birth, doctor_contact, 
+        doctor_address, doctor_is_available, doctor_gender
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
       [
         newDoctorId,
         doctorName,
-        doctorSpecialist,
+        doctorSpecialization,
+        doctorDateOfBirth,
         contactNumber,
         address,
-        true, // Default to available
+        true,
+        doctorGender,
       ]
     );
+
+    if (result.rowCount === 0) {
+      return res.status(500).json({
+        success: false,
+        message: "Insertion failed",
+      });
+    }
 
     res.status(201).json({
       success: true,
       message: "Doctor created successfully",
-      data: result.rows[0],
+      data: result.rows[0].doctor_id,
     });
   } catch (error) {
     console.error("Error creating doctor:", error);
