@@ -16,6 +16,7 @@ create table if not exists doctor (
     doctor_name varchar(255) not null,
     doctor_specialization varchar(255) not null,
     doctor_date_of_birth date not null,
+    doctor_gender varchar(1) check(doctor_gender in ('M', 'F')) not null,
     doctor_contact varchar(10) check(LENGTH(doctor_contact) = 10) not null,
     doctor_address varchar(255) not null,
     doctor_is_available boolean not null
