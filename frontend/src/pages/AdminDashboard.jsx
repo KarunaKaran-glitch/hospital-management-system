@@ -687,7 +687,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                         <option value="">Select gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
-                        <option value="other">Other</option>
+                        <option value="others">Other</option>
                       </select>
                     </div>
                   </div>
@@ -782,6 +782,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                         <th>Name</th>
                         <th>Specialization</th>
                         <th>Date Of Birth</th>
+                        <th>Gender</th>
                         <th>Address</th>
                         <th>Contact</th>
                         <th>Status</th>
@@ -795,6 +796,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                           <td>{doctor.doctor_name}</td>
                           <td>{doctor.doctor_specialization || "N/A"}</td>
                           <td>{doctor.doctor_date_of_birth || "N/A"}</td>
+                          <td>{doctor.doctor_gender || "N/A"}</td>
                           <td>{doctor.doctor_address || "N/A"}</td>
                           <td>{doctor.doctor_contact || "N/A"}</td>
                           <td>
