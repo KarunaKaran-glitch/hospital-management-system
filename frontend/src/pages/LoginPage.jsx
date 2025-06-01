@@ -98,7 +98,7 @@ export default function LoginPage() {
             role: "doctor",
             doctorId: formData.loginId,
             doctorName: data.data?.doctorName || "Doctor",
-            specialization: data.data?.doctorSpecialist,
+            specialization: data.data?.doctorspecialization,
             isLoggedIn: true,
           })
         );

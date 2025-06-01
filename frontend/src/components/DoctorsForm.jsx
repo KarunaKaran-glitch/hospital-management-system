@@ -4,10 +4,11 @@ import "../index.css";
 export default function DoctorsForm() {
   const [formData, setFormData] = useState({
     doctorName: "",
-    doctorSpecialist: "",
+    doctorspecialization: "",
     doctorContact: "",
     doctorAddress: "",
-    doctorIsAvailable: true
+    doctorIsAvailable: true,
+    doctorGender: "", // <-- Add this line
   });
 
   const [errors, setErrors] = useState({});
@@ -31,8 +32,8 @@ export default function DoctorsForm() {
       isValid = false;
     }
 
-    if (!formData.doctorSpecialist.trim()) {
-      tempErrors.doctorSpecialist = "Specialization is required";
+    if (!formData.doctorspecialization.trim()) {
+      tempErrors.doctorspecialization = "Specialization is required";
       isValid = false;
     }
 
@@ -46,6 +47,11 @@ export default function DoctorsForm() {
 
     if (!formData.doctorAddress.trim()) {
       tempErrors.doctorAddress = "Address is required";
+      isValid = false;
+    }
+
+    if (!formData.doctorGender) {
+      tempErrors.doctorGender = "Gender is required";
       isValid = false;
     }
 
@@ -64,10 +70,11 @@ export default function DoctorsForm() {
       // Reset form after submission
       setFormData({
         doctorName: "",
-        doctorSpecialist: "",
+        doctorspecialization: "",
         doctorContact: "",
         doctorAddress: "",
-        doctorIsAvailable: true
+        doctorIsAvailable: true,
+        doctorGender: "" // <-- Add this
       });
     }
   };
@@ -109,13 +116,13 @@ export default function DoctorsForm() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="doctorSpecialist">Specialization</label>
+          <label htmlFor="doctorspecialization">Specialization</label>
           <select
-            id="doctorSpecialist"
-            name="doctorSpecialist"
-            value={formData.doctorSpecialist}
+            id="doctorspecialization"
+            name="doctorspecialization"
+            value={formData.doctorspecialization}
             onChange={handleChange}
-            className={errors.doctorSpecialist ? "error-input" : ""}
+            className={errors.doctorspecialization ? "error-input" : ""}
           >
             <option value="">Select specialization</option>
             {specializations.map((specialization) => (
@@ -124,7 +131,7 @@ export default function DoctorsForm() {
               </option>
             ))}
           </select>
-          {errors.doctorSpecialist && <div className="error-message">{errors.doctorSpecialist}</div>}
+          {errors.doctorspecialization && <div className="error-message">{errors.doctorspecialization}</div>}
         </div>
 
         <div className="form-group">
@@ -155,6 +162,22 @@ export default function DoctorsForm() {
           {errors.doctorAddress && <div className="error-message">{errors.doctorAddress}</div>}
         </div>
 
+        <div className="form-group">
+          <label htmlFor="doctorGender">Gender</label>
+          <select
+            id="doctorGender"
+            name="doctorGender"
+            value={formData.doctorGender}
+            onChange={handleChange}
+            className={errors.doctorGender ? "error-input" : ""}>
+            <option value="">Select gender</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="O">Other</option>
+          </select>
+          {errors.doctorGender && <div className="error-message">{errors.doctorGender}</div>}
+        </div>
+
         <div className="form-group checkbox-group">
           <label className="checkbox-label">
             <input
@@ -172,10 +195,11 @@ export default function DoctorsForm() {
           <button type="button" className="reset-btn" onClick={() => {
             setFormData({
               doctorName: "",
-              doctorSpecialist: "",
+              doctorspecialization: "",
               doctorContact: "",
               doctorAddress: "",
-              doctorIsAvailable: true
+              doctorIsAvailable: true,
+              doctorGender: ""
             });
             setErrors({});
           }}>

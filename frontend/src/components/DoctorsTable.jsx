@@ -28,6 +28,7 @@ export default function DoctorsTable() {
         <tr>
           <th>Doctor ID</th>
           <th>Name</th>
+          <th>Gender</th>
           <th>Specalist</th>
           <th>Address</th>
           <th>Contact Number</th>
@@ -42,6 +43,7 @@ export default function DoctorsTable() {
               <tr key={index}>
                 <td>{doctor.doctor_id}</td>
                 <td>{doctor.doctor_name}</td>
+                <td>{doctor.doctor_gender}</td>
                 <td>{doctor.doctor_specalist}</td>
                 <td>{doctor.doctor_address}</td>
                 <td>{doctor.doctor_constant}</td>

@@ -137,10 +137,11 @@ doctorRoutes.put("/:id", async (req, res) => {
     const { id } = req.params;
     const {
       doctorName,
-      doctorSpecialist,
+      doctorspecialization,
       address,
       contactNumber,
       doctorIsAvailable,
+      doctorGender, // <-- Add this
     } = req.body;
 
     // First check if the doctor exists
@@ -159,8 +160,9 @@ doctorRoutes.put("/:id", async (req, res) => {
     // Validate required fields if any are mandatory for an update
     if (
       !doctorName &&
-      !doctorSpecialist &&
+      !doctorspecialization &&
       !address &&
+      !doctorGender &&
       !contactNumber &&
       typeof doctorIsAvailable === "undefined"
     ) {
@@ -173,13 +175,15 @@ doctorRoutes.put("/:id", async (req, res) => {
     // Construct the SET part of the SQL query dynamically
     const fieldsToUpdate = {};
     if (doctorName !== undefined) fieldsToUpdate.doctor_name = doctorName;
-    if (doctorSpecialist !== undefined)
-      fieldsToUpdate.doctor_specalist = doctorSpecialist;
+    if (doctorspecialization !== undefined)
+      fieldsToUpdate.doctor_specalist = doctorspecialization;
     if (address !== undefined) fieldsToUpdate.doctor_address = address;
     if (contactNumber !== undefined)
       fieldsToUpdate.doctor_contact = contactNumber;
     if (typeof doctorIsAvailable !== "undefined")
       fieldsToUpdate.doctor_is_available = doctorIsAvailable;
+    if (doctorGender !== undefined)
+      fieldsToUpdate.doctor_gender = doctorGender;
 
     const fieldKeys = Object.keys(fieldsToUpdate);
     if (fieldKeys.length === 0) {

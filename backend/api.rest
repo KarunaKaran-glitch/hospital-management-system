@@ -2,10 +2,10 @@ POST http://localhost:5001/patients
 Content-Type: application/json
 
 {
-    "patientName": "Karunakaran",
+    "patientName": "Rajendran",
     "dateOfBirth": "2003/06/30",
     "address": "Valangaiman",
-    "contactNumber": "1234567890",
+    "contactNumber": "1234597890",
     "gender": "M",
     "bloodGroup": "O+",
     "weight": "77",
@@ -23,7 +23,7 @@ Content-Type: application/json
     "patientName":"Will Wheaton"
 }
 ###
-GET http://localhost:5001/doctors/
+GET http://localhost:5001/doctor/
 
 ###
 GET http://localhost:5001/doctors/available
@@ -36,11 +36,12 @@ POST http://localhost:5001/doctors
 Content-Type: application/json
 
 {
-    "doctorName": "geroge",
+    "doctorName": "karthi",
     "doctorSpecialization": "ortho",
-    "doctorDateOfBirth": "12/14/2001",
+    "doctorDateOfBirth": "2001/12/14",
     "contactNumber": "3456789212",
-    "address": "Nagarkovil"
+    "address": "Nagarkovil",
+    "doctorGender": "M"
 }
 
 ###
