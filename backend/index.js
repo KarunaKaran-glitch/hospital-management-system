@@ -10,14 +10,14 @@ import loginRoutes from "./routes/loginRoutes.js";
 
 dotenv.config();
 
-const port = process.env.PORT;
+const port = process.env.PORT || 5001;
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Hello");
+  res.send("Hello,world");
 });
 
 app.use("/login", loginRoutes);

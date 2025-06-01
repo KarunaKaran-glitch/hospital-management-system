@@ -55,7 +55,7 @@ INSERT INTO patient (patient_id, patient_name, patient_dob, patient_address, pat
 ('p00012', 'Kyle Reese', '1980-03-15', '909 Future St, LA', '1000000001', 'M', 'A+', 180.0, 75.0, NOW());
 
 -- Mock data for doctor table
-INSERT INTO doctor (doctor_id, doctor_name, doctor_specalist, doctor_date_of_birth, doctor_contact, doctor_address, doctor_is_available) VALUES
+INSERT INTO doctor (doctor_id, doctor_name, doctor_specialization, doctor_date_of_birth, doctor_contact, doctor_address, doctor_is_available) VALUES
 ('d001', 'Dr. Alan Turing', 'Cardiology', '1912-06-23', '1122334455', '1 Hospital Rd, Medcity', true),
 ('d002', 'Dr. Ada Lovelace', 'Pediatrics', '1815-12-10', '2233445566', '2 Clinic Ave, Medcity', false),
 ('d003', 'Dr. Charles Babbage', 'Neurology', '1791-12-26', '3344556677', '3 Health St, Medcity', true),
