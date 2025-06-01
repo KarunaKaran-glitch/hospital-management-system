@@ -23,7 +23,7 @@ Content-Type: application/json
     "patientName":"Will Wheaton"
 }
 ###
-GET http://localhost:5001/doctor/
+GET http://localhost:5001/doctors/
 
 ###
 GET http://localhost:5001/doctors/available

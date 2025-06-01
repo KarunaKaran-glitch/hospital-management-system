@@ -68,6 +68,24 @@
   margin-bottom: 0;
 }
 
+/* Fix for checkbox alignment */
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.checkbox-wrapper label {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
 .submit-button {
   background-color: #3498db;
   color: white;
