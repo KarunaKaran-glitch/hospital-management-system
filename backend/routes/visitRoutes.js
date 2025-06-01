@@ -151,10 +151,74 @@ visitRoutes.get("/doctor/:doctorId/upcoming", async (req, res) => {
   }
 });
 
+visitRoutes.get("/patient/pending", async (req, res) => {
+  try {
+    const { patientId } = req.query; // Assuming patientId is passed as a query parameter e.g., /patient/pending?patientId=123
+
+    if (!patientId) {
+      return res.status(400).json({
+        success: false,
+        message: "patientId is required.",
+      });
+    }
+
+    const patientQuery = await pool.query(
+      `SELECT * FROM patient WHERE patient_id = $1`,
+      [patientId]
+    );
+
+    if (patientQuery.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Patient not found",
+      });
+    }
+
+    const pendingVisitsQuery = await pool.query(
+      `
+      SELECT 
+        v.doctor_id,
+        v.date_of_visit,
+        v.visit_status,
+        v.visit_reason,
+        v.report_id,
+        d.doctor_name,
+        d.doctor_specialization
+      FROM visit v
+      JOIN doctor d ON v.doctor_id = d.doctor_id
+      WHERE v.patient_id = $1 AND v.visit_status = 'pending'
+      ORDER BY v.date_of_visit ASC
+      `,
+      [patientId]
+    );
+
+    if (pendingVisitsQuery.rowCount === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No pending appointments found for this patient.",
+        data: [],
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Pending appointments retrieved successfully.",
+      data: pendingVisitsQuery.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching patient's pending appointments:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+});
+
 visitRoutes.post("/", async (req, res) => {
   try {
-    const { patientId, doctorId, dateOfVisit } = req.body;
-    if (!patientId || !doctorId || !dateOfVisit) {
+    const { patientId, doctorId, dateOfVisit, visitReason } = req.body;
+    if (!patientId || !doctorId || !dateOfVisit || !visitReason) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -220,11 +284,11 @@ visitRoutes.post("/", async (req, res) => {
 
     const appointmentCreationQuery = await pool.query(
       `
-      INSERT INTO visit (patient_id, doctor_id, date_of_visit, visit_status)
-      VALUES ($1, $2, $3, 'pending')
+      INSERT INTO visit (patient_id, doctor_id, date_of_visit, visit_status, visit_reason)
+      VALUES ($1, $2, $3, 'pending', $4)
       RETURNING *
       `,
-      [patientId, doctorId, parsedDate]
+      [patientId, doctorId, parsedDate, visitReason]
     );
 
     if (appointmentCreationQuery.rowCount === 1) {
@@ -239,9 +303,6 @@ visitRoutes.post("/", async (req, res) => {
       message: "Appointment creation failed",
     });
   } catch (error) {
-    console.log("====================================");
-    console.log(error);
-    console.log("====================================");
     return res.status(500).json({
       success: false,
       message: "Server error",

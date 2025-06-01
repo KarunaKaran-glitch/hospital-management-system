@@ -35,7 +35,7 @@ export default function PatientDashboard() {
     try {
       setLoading(true);
       const response = await fetch(
-        `${SERVER_URL}/visits/patient/${userData.patientId}`
+        `${SERVER_URL}/visits/patient/pending?patientId=${userData.patientId}`
       );
       const data = await response.json();
 
@@ -99,27 +99,7 @@ export default function PatientDashboard() {
     setError("");
     setSuccess("");
 
-    // Validation
-    if (
-      !appointmentForm.doctorId ||
-      !appointmentForm.appointmentDate ||
-      !appointmentForm.appointmentTime ||
-      !appointmentForm.reason
-    ) {
-      console.log("====================================");
-      console.log(
-        appointmentForm.doctorId,
-        appointmentForm.appointmentDate,
-        appointmentForm.appointmentTime,
-        appointmentForm.reason
-      );
-      console.log("====================================");
-      setError("All fields are required");
-      return;
-    }
-
     try {
-      // Format date and time to match schema's timestamp format
       const dateTime = new Date(
         `${appointmentForm.appointmentDate}T${appointmentForm.appointmentTime}`
       ).toISOString();
@@ -130,11 +110,10 @@ export default function PatientDashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          patient_id: userData.patientId,
-          doctor_id: appointmentForm.doctorId,
-          date_of_visit: dateTime,
-          visit_status: "pending",
-          visit_reason: appointmentForm.reason,
+          patientId: userData.patientId,
+          doctorId: appointmentForm.doctorId,
+          dateOfVisit: dateTime,
+          visitReason: appointmentForm.reason,
         }),
       });
 

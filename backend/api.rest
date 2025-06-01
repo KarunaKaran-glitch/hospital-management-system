@@ -118,3 +118,6 @@ GET http://localhost:5001/reports
 GET http://localhost:5001/reports?patientId=p00001
 
 ###
+GET http://localhost:5001/visits/patient/pending?patientId=p00001
+
+###
