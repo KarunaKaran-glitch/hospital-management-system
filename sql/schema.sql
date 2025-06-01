@@ -14,7 +14,7 @@ create table if not exists patient (
 create table if not exists doctor (
     doctor_id varchar(4) primary key check(doctor_id like 'd%' and LENGTH(doctor_id) = 4),
     doctor_name varchar(255) not null,
-    doctor_specialization varchar(255) not n    ull,
+    doctor_specialization varchar(255) not null,
     doctor_date_of_birth date not null,
     doctor_contact varchar(10) check(LENGTH(doctor_contact) = 10) not null,
     doctor_address varchar(255) not null,
@@ -82,15 +82,16 @@ INSERT INTO report (report_id, patient_id, doctor_id, date_of_visit, doctor_rema
 ('R0000000010', 'p00010', 'd010', '2023-10-05 15:00:00', 'Stomach pain. Endoscopy recommended if symptoms persist.');
 
 -- Mock data for visit table
--- Ensure patient_id, doctor_id, date_of_visit, and report_id correspond to the report table entries
-INSERT INTO visit (patient_id, doctor_id, date_of_visit, visit_status, report_id) VALUES
-('p00001', 'd001', '2023-10-01 10:00:00', 'visited', 'R0000000001'),
-('p00002', 'd002', '2023-10-01 11:00:00', 'visited', 'R0000000002'),
-('p00003', 'd003', '2023-10-02 09:30:00', 'visited', 'R0000000003'),
-('p00004', 'd004', '2023-10-02 14:00:00', 'visited', 'R0000000004'),
-('p00005', 'd005', '2023-10-03 16:00:00', 'visited', 'R0000000005'),
-('p00006', 'd006', '2023-10-03 08:45:00', 'visited', 'R0000000006'),
-('p00007', 'd007', '2023-10-04 13:15:00', 'visited', 'R0000000007'),
-('p00008', 'd008', '2023-10-04 10:30:00', 'missed', 'R0000000008'),
-('p00009', 'd009', '2023-10-05 11:20:00', 'pending', 'R0000000009'),
-('p00010', 'd010', '2023-10-05 15:00:00', 'cancelled', 'R0000000010');
+INSERT INTO visit (patient_id, doctor_id, date_of_visit, visit_status, report_id, visit_reason) VALUES
+('p00001', 'd001', '2023-10-01 10:00:00', 'visited', 'R0000000001', 'Follow-up consultation for heart condition'),
+('p00002', 'd002', '2023-10-01 11:00:00', 'visited', 'R0000000002', 'Annual pediatric checkup'),
+('p00003', 'd003', '2023-10-02 09:30:00', 'visited', 'R0000000003', 'Persistent headaches and dizziness'),
+('p00004', 'd004', '2023-10-02 14:00:00', 'visited', 'R0000000004', 'Consultation regarding cancer treatment options'),
+('p00005', 'd005', '2023-10-03 16:00:00', 'visited', 'R0000000005', 'Pain and swelling in the left arm after a fall'),
+('p00006', 'd006', '2023-10-03 08:45:00', 'visited', 'R0000000006', 'Itchy rash on the back'),
+('p00007', 'd007', '2023-10-04 13:15:00', 'visited', 'R0000000007', 'Fever, cough, and body aches'),
+('p00008', 'd008', '2023-10-04 10:30:00', 'missed', 'R0000000008', 'Routine hearing test'),
+('p00009', 'd009', '2023-10-05 11:20:00', 'pending', 'R0000000009', 'Shortness of breath and wheezing'),
+('p00010', 'd010', '2023-10-05 15:00:00', 'cancelled', 'R0000000010', 'Abdominal pain and nausea'),
+('p00011', 'd007', '2023-10-06 09:00:00', 'pending', NULL, 'General checkup'),
+('p00012', 'd001', '2023-10-06 10:30:00', 'pending', NULL, 'Chest pain evaluation');

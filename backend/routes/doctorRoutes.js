@@ -15,6 +15,21 @@ doctorRoutes.get("/", async (req, res) => {
   }
 });
 
+doctorRoutes.get("/available", async (req, res) => {
+  console.log("====================================");
+  console.log("/available");
+  console.log("====================================");
+  try {
+    const availableDoctors = await pool.query(
+      "SELECT * FROM doctor WHERE doctor_is_available = TRUE ORDER BY doctor_id"
+    );
+    res.json({ success: true, data: availableDoctors.rows });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
 doctorRoutes.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -261,7 +276,5 @@ doctorRoutes.delete("/:id", async (req, res) => {
     });
   }
 });
-
-
 
 export default doctorRoutes;

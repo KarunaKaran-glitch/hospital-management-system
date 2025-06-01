@@ -26,6 +26,9 @@ Content-Type: application/json
 GET http://localhost:5001/doctors/
 
 ###
+GET http://localhost:5001/doctors/available
+
+###
 GET http://localhost:5001/doctors/d005
 
 ###
@@ -108,5 +111,10 @@ Content-Type: application/json
     "doctorId": "d001",
     "dateOfVisit": "2025/06/27"
 }
+###
+GET http://localhost:5001/reports
 
+###
+GET http://localhost:5001/reports?patientId=p00001
 
+###

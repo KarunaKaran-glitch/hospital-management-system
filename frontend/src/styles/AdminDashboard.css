@@ -113,7 +113,7 @@
 
 .section-header h2 {
   margin: 0;
-  color: white;
+  color: #3498db;
 }
 
 /* Toggle form button */
@@ -165,7 +165,7 @@
 
 .table-section h3 {
   margin-bottom: 15px;
-  color: white;
+  color: #3498db;
   font-size: 18px;
 }
 
@@ -308,7 +308,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  background-color: #4d3fcf; /* Change this to any color you want */
+  background-color: #4d3fcf;
   border-bottom: 1px solid #e0e0e0;
   border-radius: 12px;
   margin-bottom: 20px;
@@ -364,4 +364,3 @@
 .logout-container .logout-button {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
-

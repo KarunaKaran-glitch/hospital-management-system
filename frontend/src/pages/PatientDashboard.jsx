@@ -29,12 +29,7 @@ export default function PatientDashboard() {
       navigate("/");
       return;
     }
-
-    // Fetch patient data
-    fetchVisits();
-    fetchAvailableDoctors();
-    fetchReports();
-  }, []);
+  }, [navigate, userData.patientId]);
 
   const fetchVisits = async () => {
     try {
@@ -58,7 +53,7 @@ export default function PatientDashboard() {
 
   const fetchAvailableDoctors = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/doctors?available=true`);
+      const response = await fetch(`${SERVER_URL}/doctors/available`);
       const data = await response.json();
 
       if (data.success) {
@@ -75,7 +70,7 @@ export default function PatientDashboard() {
     try {
       setLoading(true);
       const response = await fetch(
-        `${SERVER_URL}/reports/patient/${userData.patientId}`
+        `${SERVER_URL}/reports?patientId=${userData.patientId}`
       );
       const data = await response.json();
 
@@ -214,19 +209,28 @@ export default function PatientDashboard() {
           className={`tab-button ${
             activeTab === "appointments" ? "active" : ""
           }`}
-          onClick={() => setActiveTab("appointments")}
+          onClick={() => {
+            setActiveTab("appointments");
+            fetchVisits();
+          }}
         >
           My Appointments
         </button>
         <button
           className={`tab-button ${activeTab === "schedule" ? "active" : ""}`}
-          onClick={() => setActiveTab("schedule")}
+          onClick={() => {
+            setActiveTab("schedule");
+            fetchAvailableDoctors();
+          }}
         >
           Schedule Appointment
         </button>
         <button
           className={`tab-button ${activeTab === "records" ? "active" : ""}`}
-          onClick={() => setActiveTab("records")}
+          onClick={() => {
+            setActiveTab("records");
+            fetchReports();
+          }}
         >
           Medical Records
         </button>
