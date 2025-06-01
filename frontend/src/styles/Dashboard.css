@@ -14,7 +14,7 @@
   background-color: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
   margin-bottom: 20px;
-} 
+}
 
 .header-content {
   flex: 1;
@@ -50,7 +50,6 @@
 
 .logout-button i {
   font-size: 16px;
-  
 }
 
 /* Tabs */
@@ -58,7 +57,6 @@
   display: flex;
   border-bottom: 1px solid #e0e0e0;
   margin-bottom: 30px;
-  
 }
 
 .tab-button {
@@ -211,12 +209,22 @@ textarea:focus {
 }
 
 .success-message {
-  background-color: #e3f7ed;
-  color: #27ae60;
+  background-color: #d4edda;
+  color: #155724;
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 20px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-success {
+  background: none;
+  border: none;
+  color: #155724;
+  font-size: 20px;
+  cursor: pointer;
 }
 
 .loading,
@@ -293,4 +301,96 @@ textarea:focus {
   .medical-records {
     grid-template-columns: 1fr;
   }
+}
+
+/* Create Report Button */
+.create-report-button {
+  background-color: #3498db;
+  color: white;
+}
+
+.create-report-button:hover {
+  background-color: #2980b9;
+}
+
+/* View report button */
+.view-report-button {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.view-report-button:hover {
+  background-color: #27ae60;
+}
+
+.view-report-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Mark missed button */
+.mark-missed-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.mark-missed-button:hover {
+  background-color: #c0392b;
+}
+
+/* Report view overlay */
+.report-view-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.report-view-container {
+  background-color: white;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.report-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.report-view-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.report-content {
+  padding: 20px;
+}
+
+.report-section {
+  margin-bottom: 20px;
+}
+
+.report-section h4 {
+  color: #3498db;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 5px;
+}
+
+.report-section p {
+  margin: 8px 0;
+  line-height: 1.5;
 }

@@ -9,6 +9,7 @@ export default function DoctorDashboard() {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [reportForm, setReportForm] = useState({
     visitId: "",
     patientId: "",
@@ -18,21 +19,20 @@ export default function DoctorDashboard() {
   });
   const [showReportForm, setShowReportForm] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState(null);
+  const [viewingReport, setViewingReport] = useState(null);
+  const [fetchingReport, setFetchingReport] = useState(false);
 
   const navigate = useNavigate();
 
-  // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user")) || {};
 
   useEffect(() => {
-    // Check if user is logged in as doctor
     if (!userData.doctorId) {
       navigate("/");
       return;
     }
-
     fetchAppointments();
-  }, []); // Added navigate to dependency array
+  }, [navigate, userData.doctorId]);
 
   const fetchAppointments = async () => {
     try {
@@ -144,6 +144,10 @@ export default function DoctorDashboard() {
         // Update visit status to completed
         await updateVisitStatus(reportForm.visitId, "visited");
 
+        // Show success message
+        setSuccessMessage("Report created successfully!");
+        setTimeout(() => setSuccessMessage(""), 5000);
+
         // Close form and refresh appointments
         setShowReportForm(false);
         fetchAppointments();
@@ -183,6 +187,8 @@ export default function DoctorDashboard() {
       const result = await updateVisitStatus(visitId, status);
 
       if (result.success) {
+        setSuccessMessage(`Appointment marked as ${status} successfully!`);
+        setTimeout(() => setSuccessMessage(""), 5000);
         fetchAppointments();
       } else {
         setError(`Failed to mark visit as ${status}: ${result.message || ""}`);
@@ -190,6 +196,35 @@ export default function DoctorDashboard() {
     } catch (error) {
       console.error(`Error marking visit as ${status}:`, error);
       setError("An error occurred. Please try again.");
+    }
+  };
+
+  const handleViewReport = async (visitId) => {
+    try {
+      setFetchingReport(true);
+      setError("");
+
+      // Fetch the report for this visit
+      const response = await fetch(`${SERVER_URL}/reports/visit/${visitId}`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setViewingReport(data.data);
+      } else {
+        setError(
+          "Could not retrieve report: " + (data.message || "Report not found")
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching report:", error);
+      setError("Failed to load report: " + error.message);
+    } finally {
+      setFetchingReport(false);
     }
   };
 
@@ -237,9 +272,7 @@ export default function DoctorDashboard() {
   };
 
   const handleLogout = () => {
-    // Clear user data from localStorage
     localStorage.removeItem("user");
-    // Redirect to login page
     navigate("/");
   };
 
@@ -264,12 +297,27 @@ export default function DoctorDashboard() {
         </div>
       )}
 
+      {successMessage && (
+        <div className="success-message dashboard-alert">
+          {successMessage}
+          <button
+            className="close-success"
+            onClick={() => setSuccessMessage("")}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="dashboard-tabs">
         <button
           className={`tab-button ${
             activeTab === "todayAppointments" ? "active" : ""
           }`}
-          onClick={() => setActiveTab("todayAppointments")}
+          onClick={() => {
+            setActiveTab("todayAppointments");
+            fetchAppointments();
+          }}
         >
           Today's Appointments
         </button>
@@ -373,6 +421,65 @@ export default function DoctorDashboard() {
           </div>
         )}
 
+        {viewingReport && (
+          <div className="report-view-overlay">
+            <div className="report-view-container">
+              <div className="report-view-header">
+                <h3>Medical Report</h3>
+                <button
+                  className="close-button"
+                  onClick={() => setViewingReport(null)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="report-content">
+                <div className="report-section">
+                  <h4>Patient Information</h4>
+                  <p>
+                    <strong>ID:</strong> {viewingReport.patient_id}
+                  </p>
+                  <p>
+                    <strong>Name:</strong> {viewingReport.patient_name || "N/A"}
+                  </p>
+                </div>
+
+                <div className="report-section">
+                  <h4>Visit Information</h4>
+                  <p>
+                    <strong>Date:</strong>{" "}
+                    {formatDate(viewingReport.date_of_visit)}
+                  </p>
+                  <p>
+                    <strong>Time:</strong>{" "}
+                    {formatTime(viewingReport.date_of_visit)}
+                  </p>
+                </div>
+
+                <div className="report-section">
+                  <h4>Doctor's Remarks</h4>
+                  <p>{viewingReport.doctor_remarks || "No remarks recorded"}</p>
+                </div>
+
+                {viewingReport.prescription && (
+                  <div className="report-section">
+                    <h4>Prescription</h4>
+                    <p>{viewingReport.prescription}</p>
+                  </div>
+                )}
+
+                {viewingReport.follow_up_date && (
+                  <div className="report-section">
+                    <h4>Follow-up Date</h4>
+                    <p>{formatDate(viewingReport.follow_up_date)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === "todayAppointments" && (
           <div className="appointments-section">
             <h2>Today's Appointments</h2>
@@ -440,13 +547,10 @@ export default function DoctorDashboard() {
                             {visit.visit_status === "visited" && (
                               <button
                                 className="action-button view-report-button"
-                                onClick={() =>
-                                  alert(
-                                    "View report functionality to be implemented"
-                                  )
-                                }
+                                onClick={() => handleViewReport(visit.visit_id)}
+                                disabled={fetchingReport}
                               >
-                                View Report
+                                {fetchingReport ? "Loading..." : "View Report"}
                               </button>
                             )}
                           </div>

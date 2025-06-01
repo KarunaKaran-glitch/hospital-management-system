@@ -94,7 +94,7 @@ Content-Type: application/json
     "doctorDateOfBirth": "15/06/1985"
 }
 ###
-GET http://localhost:5001/visits/doctor/d004/allPending
+GET http://localhost:5001/visits/doctor/d001/allPending
 
 ###
 GET http://localhost:5001/visits/doctor/d004/today

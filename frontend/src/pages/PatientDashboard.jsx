@@ -29,6 +29,8 @@ export default function PatientDashboard() {
       navigate("/");
       return;
     }
+
+    fetchVisits();
   }, [navigate, userData.patientId]);
 
   const fetchVisits = async () => {
