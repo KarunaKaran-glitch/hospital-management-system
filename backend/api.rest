@@ -104,10 +104,9 @@ POST http://localhost:5001/visits/
 Content-Type: application/json
 
 {
-    "patientId": "p00012",
-    "doctorId": "d004",
+    "patientId": "p00001",
+    "doctorId": "d001",
     "dateOfVisit": "2025/06/27"
 }
-
 
 

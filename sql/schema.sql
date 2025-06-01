@@ -14,7 +14,7 @@ create table if not exists patient (
 create table if not exists doctor (
     doctor_id varchar(4) primary key check(doctor_id like 'd%' and LENGTH(doctor_id) = 4),
     doctor_name varchar(255) not null,
-    doctor_specialization varchar(255) not null,
+    doctor_specialization varchar(255) not n    ull,
     doctor_date_of_birth date not null,
     doctor_contact varchar(10) check(LENGTH(doctor_contact) = 10) not null,
     doctor_address varchar(255) not null,
@@ -35,6 +35,7 @@ create table if not exists visit (
     date_of_visit timestamp not null,
     visit_status varchar(20) check(visit_status in ('pending','visited','missed','cancelled')) not null,
     report_id varchar(11) references report(report_id),
+    visit_reason varchar(255),
     primary key(patient_id,doctor_id,date_of_visit)
 );
 

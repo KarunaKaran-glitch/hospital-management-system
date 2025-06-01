@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SERVER_URL from "../lib/constants";
 import "../styles/Dashboard.css";
 
 export default function PatientDashboard() {
@@ -18,7 +19,6 @@ export default function PatientDashboard() {
   const [success, setSuccess] = useState("");
 
   const navigate = useNavigate();
-  const SERVER_URL = "http://localhost:5001";
 
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user")) || {};
@@ -111,6 +111,14 @@ export default function PatientDashboard() {
       !appointmentForm.appointmentTime ||
       !appointmentForm.reason
     ) {
+      console.log("====================================");
+      console.log(
+        appointmentForm.doctorId,
+        appointmentForm.appointmentDate,
+        appointmentForm.appointmentTime,
+        appointmentForm.reason
+      );
+      console.log("====================================");
       setError("All fields are required");
       return;
     }
@@ -181,15 +189,24 @@ export default function PatientDashboard() {
   };
 
   const getStatusLabel = (status) => {
-    // Capitalize first letter
     return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/");
   };
 
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Patient Dashboard</h1>
-        <p>Welcome, {userData.patientName || "Patient"}</p>
+        <div className="header-content">
+          <h1>Patient Dashboard</h1>
+          <p>Welcome, {userData.patientName || "Patient"}</p>
+        </div>
+        <button className="logout-button" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt"></i> Logout
+        </button>
       </div>
 
       <div className="dashboard-tabs">
@@ -277,6 +294,7 @@ export default function PatientDashboard() {
                     name="doctorId"
                     value={appointmentForm.doctorId}
                     onChange={handleFormChange}
+                    required
                   >
                     <option value="">-- Select a doctor --</option>
                     {doctors.map((doctor) => (
@@ -300,6 +318,7 @@ export default function PatientDashboard() {
                       value={appointmentForm.appointmentDate}
                       onChange={handleFormChange}
                       min={new Date().toISOString().split("T")[0]}
+                      required
                     />
                   </div>
 
@@ -311,6 +330,7 @@ export default function PatientDashboard() {
                       name="appointmentTime"
                       value={appointmentForm.appointmentTime}
                       onChange={handleFormChange}
+                      required
                     />
                   </div>
                 </div>
@@ -323,6 +343,7 @@ export default function PatientDashboard() {
                     value={appointmentForm.reason}
                     onChange={handleFormChange}
                     rows="4"
+                    required
                   ></textarea>
                 </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SERVER_URL from "../lib/constants";
 import "../styles/Dashboard.css";
 import "../styles/AdminDashboard.css";
 
@@ -37,7 +38,6 @@ export default function AdminDashboard() {
   const [doctorError, setDoctorError] = useState("");
   const [doctorSuccess, setDoctorSuccess] = useState("");
 
-  const SERVER_URL = "http://localhost:5001";
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import SERVER_URL from "../lib/constants";
 import "../styles/Dashboard.css";
 
 export default function DoctorDashboard() {
@@ -19,7 +20,6 @@ export default function DoctorDashboard() {
   const [selectedVisit, setSelectedVisit] = useState(null);
 
   const navigate = useNavigate();
-  const SERVER_URL = "http://localhost:5001";
 
   // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user")) || {};
@@ -39,12 +39,8 @@ export default function DoctorDashboard() {
       setLoading(true);
       setError("");
 
-      // Get today's date in ISO format (YYYY-MM-DD)
-      // const today = new Date().toISOString().split("T")[0];
-
       // Fetch today's appointments
       const todayResponse = await fetch(
-        
         `${SERVER_URL}/visits/doctor/${userData.doctorId}/today`
       );
 
@@ -240,11 +236,23 @@ export default function DoctorDashboard() {
     setError("");
   };
 
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem("user");
+    // Redirect to login page
+    navigate("/");
+  };
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Doctor Dashboard</h1>
-        <p>Welcome, Dr. {userData.doctorName || "Doctor"}</p>
+        <div className="header-content">
+          <h1>Doctor Dashboard</h1>
+          <p>Welcome, Dr. {userData.doctorName || "Doctor"}</p>
+        </div>
+        <button className="logout-button" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt"></i> Logout
+        </button>
       </div>
 
       {error && (
