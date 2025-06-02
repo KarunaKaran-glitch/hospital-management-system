@@ -289,16 +289,19 @@ Address: ${patient.patient_address || "N/A"}`);
   };
 
   const handleEditPatient = (patient) => {
+    console.log("Editing patient:", patient); // Add this for debugging
+
+    // Correctly map database field names to form field names
     setPatientForm({
       patientId: patient.patient_id,
       patientName: patient.patient_name || "",
       dateOfBirth: patient.patient_dob ? patient.patient_dob.split("T")[0] : "",
-      gender: patient.gender || "",
-      contactNumber: patient.contact_number || "",
-      address: patient.address || "",
-      bloodGroup: patient.blood_group || "",
-      height: patient.height || "",
-      weight: patient.weight || "",
+      gender: patient.patient_gender || "", // Changed from patient.gender
+      contactNumber: patient.patient_contact || "", // Changed from patient.contact_number
+      address: patient.patient_address || "", // Changed from patient.address
+      bloodGroup: patient.patient_blood_group || "", // Changed from patient.blood_group
+      height: patient.patient_height || "",
+      weight: patient.patient_weight || "",
     });
 
     // Show the form and scroll to it
