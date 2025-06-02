@@ -66,6 +66,9 @@ export default function AdminDashboard() {
   const [doctorError, setDoctorError] = useState("");
   const [doctorSuccess, setDoctorSuccess] = useState("");
 
+  const [patientSearchQuery, setPatientSearchQuery] = useState("");
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -166,6 +169,14 @@ export default function AdminDashboard() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handlePatientSearch = (e) => {
+    setPatientSearchQuery(e.target.value);
+  };
+
+  const handleDoctorSearch = (e) => {
+    setDoctorSearchQuery(e.target.value);
   };
 
   const handlePatientSubmit = async (e) => {
@@ -572,6 +583,26 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
     ],
   };
 
+  const filteredPatients = patients.filter((patient) => {
+    const searchTermLower = patientSearchQuery.toLowerCase();
+    return (
+      patient.patient_id.toLowerCase().includes(searchTermLower) ||
+      patient.patient_name.toLowerCase().includes(searchTermLower) ||
+      (patient.patient_contact && patient.patient_contact.toLowerCase().includes(searchTermLower)) ||
+      (patient.patient_blood_group && patient.patient_blood_group.toLowerCase().includes(searchTermLower))
+    );
+  });
+
+  const filteredDoctors = doctors.filter((doctor) => {
+    const searchTermLower = doctorSearchQuery.toLowerCase();
+    return (
+      doctor.doctor_id.toLowerCase().includes(searchTermLower) ||
+      doctor.doctor_name.toLowerCase().includes(searchTermLower) ||
+      (doctor.doctor_specialization && doctor.doctor_specialization.toLowerCase().includes(searchTermLower)) ||
+      (doctor.doctor_contact && doctor.doctor_contact.toLowerCase().includes(searchTermLower))
+    );
+  });
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -757,12 +788,26 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
             )}
 
             <div className="table-section">
-              <h3>All Patients</h3>
+              <div className="table-header">
+                <h3>All Patients</h3>
+                <div className="search-container">
+                  <input
+                    type="text"
+                    placeholder="Search patients..."
+                    value={patientSearchQuery}
+                    onChange={handlePatientSearch}
+                    className="search-input"
+                  />
+                  <i className="fas fa-search search-icon"></i>
+                </div>
+              </div>
 
               {loading ? (
                 <div className="loading">Loading patients...</div>
               ) : patients.length === 0 ? (
                 <div className="no-data">No patients found in the system.</div>
+              ) : filteredPatients.length === 0 ? (
+                <div className="no-data">No patients match your search.</div>
               ) : (
                 <div className="table-container">
                   <table className="data-table">
@@ -780,7 +825,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                       </tr>
                     </thead>
                     <tbody>
-                      {patients.map((patient) => (
+                      {filteredPatients.map((patient) => (
                         <tr key={patient.patient_id}>
                           <td>{patient.patient_id}</td>
                           <td>{patient.patient_name}</td>
@@ -966,12 +1011,26 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
             )}
 
             <div className="table-section">
-              <h3>All Doctors</h3>
+              <div className="table-header">
+                <h3>All Doctors</h3>
+                <div className="search-container">
+                  <input
+                    type="text"
+                    placeholder="Search doctors..."
+                    value={doctorSearchQuery}
+                    onChange={handleDoctorSearch}
+                    className="search-input"
+                  />
+                  <i className="fas fa-search search-icon"></i>
+                </div>
+              </div>
 
               {loading ? (
                 <div className="loading">Loading doctors...</div>
               ) : doctors.length === 0 ? (
                 <div className="no-data">No doctors found in the system.</div>
+              ) : filteredDoctors.length === 0 ? (
+                <div className="no-data">No doctors match your search.</div>
               ) : (
                 <div className="table-container">
                   <table className="data-table">
@@ -989,7 +1048,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                       </tr>
                     </thead>
                     <tbody>
-                      {doctors.map((doctor) => (
+                      {filteredDoctors.map((doctor) => (
                         <tr key={doctor.doctor_id}>
                           <td>{doctor.doctor_id}</td>
                           <td>{doctor.doctor_name}</td>
