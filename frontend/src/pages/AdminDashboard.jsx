@@ -191,9 +191,16 @@ export default function AdminDashboard() {
       return;
     }
 
+    // Check if we're updating an existing doctor
+    const isEditing = Boolean(doctorForm.doctorId);
+    const url = isEditing
+      ? `${SERVER_URL}/doctors/${doctorForm.doctorId}`
+      : `${SERVER_URL}/doctors`;
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-      const response = await fetch(`${SERVER_URL}/doctors`, {
-        method: "POST",
+      const response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
@@ -211,8 +218,15 @@ export default function AdminDashboard() {
       const data = await response.json();
 
       if (data.success) {
-        setDoctorSuccess(`Doctor created successfully with ID: ${data.data}!`);
+        setDoctorSuccess(
+          isEditing
+            ? `Doctor updated successfully`
+            : `Doctor created successfully with ID: ${data.data}!`
+        );
+
+        // Reset form
         setDoctorForm({
+          doctorId: "",
           doctorName: "",
           dateOfBirth: "",
           specialization: "",
@@ -221,13 +235,19 @@ export default function AdminDashboard() {
           address: "",
           isAvailable: true,
         });
-        // Refresh the doctor list
+
+        // Refresh doctor list
         fetchDoctors();
       } else {
-        setDoctorError(data.message || "Failed to create doctor");
+        setDoctorError(
+          data.message || `Failed to ${isEditing ? "update" : "create"} doctor`
+        );
       }
     } catch (error) {
-      console.error("Error creating doctor:", error);
+      console.error(
+        `Error ${isEditing ? "updating" : "creating"} doctor:`,
+        error
+      );
       setDoctorError("An error occurred. Please try again.");
     }
   };
@@ -269,7 +289,6 @@ Address: ${patient.patient_address || "N/A"}`);
   };
 
   const handleEditPatient = (patient) => {
-    // Set patient form data
     setPatientForm({
       patientId: patient.patient_id,
       patientName: patient.patient_name || "",
@@ -325,18 +344,20 @@ Address: ${doctor.doctor_address || "N/A"}
 Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
   };
 
-  const handleEditDoctor = (doctor) => {
+  const handleEditDoctor = async (doctor) => {
     console.log("Editing doctor:", doctor);
 
     // Set form data with correct field names based on your API response
     setDoctorForm({
       doctorId: doctor.doctor_id,
       doctorName: doctor.doctor_name || "",
-      dateOfBirth: doctor.doctor_dob ? doctor.doctor_dob.split("T")[0] : "",
+      dateOfBirth: doctor.doctor_date_of_birth
+        ? doctor.doctor_date_of_birth.split("T")[0]
+        : "",
       specialization: doctor.doctor_specialization || "",
       contactNumber: doctor.doctor_contact || "",
       gender: doctor.doctor_gender || "",
-      address: doctor.address || "",
+      address: doctor.doctor_address || "",
       isAvailable: Boolean(doctor.doctor_is_available),
     });
 
@@ -760,7 +781,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                   </div>
 
                   <button type="submit" className="submit-button">
-                    Register Doctor
+                    {doctorForm.doctorId ? "Update Doctor" : "Register Doctor"}
                   </button>
                 </form>
               </div>

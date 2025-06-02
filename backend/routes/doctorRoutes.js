@@ -137,11 +137,12 @@ doctorRoutes.put("/:id", async (req, res) => {
     const { id } = req.params;
     const {
       doctorName,
-      doctorspecialization,
+      doctorSpecialization, // Corrected capitalization
+      doctorDateOfBirth, // Added this field
       address,
       contactNumber,
-      doctorIsAvailable,
-      doctorGender, // <-- Add this
+      isAvailable, // Changed from doctorIsAvailable to match client
+      doctorGender,
     } = req.body;
 
     // First check if the doctor exists
@@ -160,11 +161,12 @@ doctorRoutes.put("/:id", async (req, res) => {
     // Validate required fields if any are mandatory for an update
     if (
       !doctorName &&
-      !doctorspecialization &&
+      !doctorSpecialization &&
       !address &&
       !doctorGender &&
       !contactNumber &&
-      typeof doctorIsAvailable === "undefined"
+      !doctorDateOfBirth &&
+      typeof isAvailable === "undefined"
     ) {
       return res.status(400).json({
         success: false,
@@ -175,15 +177,16 @@ doctorRoutes.put("/:id", async (req, res) => {
     // Construct the SET part of the SQL query dynamically
     const fieldsToUpdate = {};
     if (doctorName !== undefined) fieldsToUpdate.doctor_name = doctorName;
-    if (doctorspecialization !== undefined)
-      fieldsToUpdate.doctor_specalist = doctorspecialization;
+    if (doctorSpecialization !== undefined)
+      fieldsToUpdate.doctor_specialization = doctorSpecialization; // Corrected field name
+    if (doctorDateOfBirth !== undefined)
+      fieldsToUpdate.doctor_date_of_birth = doctorDateOfBirth;
     if (address !== undefined) fieldsToUpdate.doctor_address = address;
     if (contactNumber !== undefined)
       fieldsToUpdate.doctor_contact = contactNumber;
-    if (typeof doctorIsAvailable !== "undefined")
-      fieldsToUpdate.doctor_is_available = doctorIsAvailable;
-    if (doctorGender !== undefined)
-      fieldsToUpdate.doctor_gender = doctorGender;
+    if (typeof isAvailable !== "undefined")
+      fieldsToUpdate.doctor_is_available = isAvailable;
+    if (doctorGender !== undefined) fieldsToUpdate.doctor_gender = doctorGender;
 
     const fieldKeys = Object.keys(fieldsToUpdate);
     if (fieldKeys.length === 0) {
@@ -199,6 +202,8 @@ doctorRoutes.put("/:id", async (req, res) => {
     const values = [id, ...fieldKeys.map((key) => fieldsToUpdate[key])];
 
     const query = `UPDATE doctor SET ${setClauses} WHERE doctor_id = $1 RETURNING *`;
+    console.log("Update query:", query);
+    console.log("Update values:", values);
 
     const result = await pool.query(query, values);
 
