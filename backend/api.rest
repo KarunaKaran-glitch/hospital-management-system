@@ -108,8 +108,8 @@ POST http://localhost:5001/visits/
 Content-Type: application/json
 
 {
-    "patientId": "p00001",
-    "doctorId": "d001",
+    "patientId": "p00012",
+    "doctorId": "d006",
     "dateOfVisit": "2025/06/27"
 }
 ###
@@ -122,3 +122,4 @@ GET http://localhost:5001/reports?patientId=p00001
 GET http://localhost:5001/visits/patient/pending?patientId=p00001
 
 ###
+

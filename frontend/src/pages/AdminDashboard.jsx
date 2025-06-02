@@ -293,12 +293,12 @@ Address: ${patient.patient_address || "N/A"}`);
       patientId: patient.patient_id,
       patientName: patient.patient_name || "",
       dateOfBirth: patient.patient_dob ? patient.patient_dob.split("T")[0] : "",
-      gender: patient.gender || "",
-      contactNumber: patient.contact_number || "",
-      address: patient.address || "",
-      bloodGroup: patient.blood_group || "",
-      height: patient.height || "",
-      weight: patient.weight || "",
+      gender: patient.patient_gender || "",
+      contactNumber: patient.patient_contact_number || "",
+      address: patient.patient_address || "",
+      bloodGroup: patient.patient_blood_group || "",
+      height: patient.patient_height || "",
+      weight: patient.patient_weight || "",
     });
 
     // Show the form and scroll to it
@@ -308,6 +308,7 @@ Address: ${patient.patient_address || "N/A"}`);
     // Update UI to indicate editing mode
     setPatientSuccess("Editing patient: " + patient.patient_name);
   };
+  
 
   const handleDeletePatient = async (patientId) => {
     if (!window.confirm("Are you sure you want to delete this patient?")) {
@@ -408,8 +409,14 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
+        <div className="header-content">
         <h1>Admin Dashboard</h1>
         <p>Manage hospital resources</p>
+        </div>
+        {/* <div className="logout-container"> */}
+        <button className="logout-button" onClick={handleLogout}>
+          <i className="fas fa-sign-out-alt"></i> Logout
+        </button>
       </div>
 
       <div className="dashboard-tabs">
@@ -866,12 +873,6 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
             </div>
           </div>
         )}
-      </div>
-
-      <div className="logout-container">
-        <button className="logout-button" onClick={handleLogout}>
-          <i className="fas fa-sign-out-alt"></i> Logout
-        </button>
       </div>
     </div>
   );
