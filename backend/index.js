@@ -7,6 +7,7 @@ import doctorRoutes from "./routes/doctorRoutes.js";
 import visitRoutes from "./routes/visitRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import loginRoutes from "./routes/loginRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/patients", patientRoutes);
 app.use("/doctors", doctorRoutes);
 app.use("/visits", visitRoutes);
 app.use("/reports", reportRoutes);
+app.use("/admin", adminRoutes); 
 
 app.listen(port, () => {
   console.log(`Server started at ${port}`);

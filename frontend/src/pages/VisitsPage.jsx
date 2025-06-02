@@ -11,11 +11,6 @@ export default function VisitsPage() {
   useEffect(() => {
     const fetchVisits = async () => {
       try {
-        // In a real app, fetch from your API
-        // const response = await fetch('http://localhost:5001/visits');
-        // const data = await response.json();
-
-        // Simulating API response
         setTimeout(() => {
           setVisits([
             {

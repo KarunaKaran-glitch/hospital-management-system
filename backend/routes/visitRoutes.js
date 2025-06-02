@@ -151,6 +151,138 @@ visitRoutes.get("/doctor/:doctorId/upcoming", async (req, res) => {
   }
 });
 
+visitRoutes.get("/doctor/:doctorId/past", async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    // Verify doctor exists
+    const isDoctorQuery = await pool.query(
+      `SELECT * FROM doctor WHERE doctor_id = $1`,
+      [doctorId]
+    );
+
+    if (isDoctorQuery.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+
+    // Get past appointments (visited, missed, cancelled)
+    const pastVisitsQuery = await pool.query(
+      `
+      SELECT v.*, p.patient_name 
+      FROM visit v
+      JOIN patient p ON v.patient_id = p.patient_id
+      WHERE v.doctor_id = $1 
+      AND (v.visit_status = 'visited' OR v.visit_status = 'missed' OR v.visit_status = 'cancelled')
+      ORDER BY v.date_of_visit DESC
+      LIMIT 20
+      `,
+      [doctorId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Past appointments retrieved successfully",
+      data: pastVisitsQuery.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching past appointments:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+});
+
+visitRoutes.get("/doctor/:doctorId/statistics", async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+
+    // Verify doctor exists
+    const isDoctorQuery = await pool.query(
+      `SELECT * FROM doctor WHERE doctor_id = $1`,
+      [doctorId]
+    );
+
+    if (isDoctorQuery.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Doctor not found",
+      });
+    }
+
+    // Get count of visits by status
+    const countByStatusQuery = await pool.query(
+      `
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN visit_status = 'visited' THEN 1 END) as completed,
+        COUNT(CASE WHEN visit_status = 'missed' THEN 1 END) as missed,
+        COUNT(CASE WHEN visit_status = 'cancelled' THEN 1 END) as cancelled,
+        COUNT(CASE WHEN visit_status = 'pending' THEN 1 END) as pending
+      FROM visit
+      WHERE doctor_id = $1
+      `,
+      [doctorId]
+    );
+
+    // Get appointments by day of week
+    const appointmentsByDayQuery = await pool.query(
+      `
+      SELECT 
+        to_char(date_of_visit, 'Day') as day_of_week,
+        COUNT(*) as count
+      FROM visit
+      WHERE doctor_id = $1
+      GROUP BY day_of_week
+      ORDER BY 
+        CASE 
+          WHEN to_char(date_of_visit, 'Day') = 'Monday   ' THEN 1
+          WHEN to_char(date_of_visit, 'Day') = 'Tuesday  ' THEN 2
+          WHEN to_char(date_of_visit, 'Day') = 'Wednesday' THEN 3
+          WHEN to_char(date_of_visit, 'Day') = 'Thursday ' THEN 4
+          WHEN to_char(date_of_visit, 'Day') = 'Friday   ' THEN 5
+          WHEN to_char(date_of_visit, 'Day') = 'Saturday ' THEN 6
+          WHEN to_char(date_of_visit, 'Day') = 'Sunday   ' THEN 7
+        END
+      `,
+      [doctorId]
+    );
+
+    // Format the appointments by day data
+    const appointmentsByDay = {};
+    appointmentsByDayQuery.rows.forEach(row => {
+      appointmentsByDay[row.day_of_week.trim()] = parseInt(row.count);
+    });
+
+    // Prepare the statistics data
+    const statistics = {
+      totalAppointments: parseInt(countByStatusQuery.rows[0].total) || 0,
+      completedAppointments: parseInt(countByStatusQuery.rows[0].completed) || 0,
+      missedAppointments: parseInt(countByStatusQuery.rows[0].missed) || 0,
+      cancelledAppointments: parseInt(countByStatusQuery.rows[0].cancelled) || 0,
+      pendingAppointments: parseInt(countByStatusQuery.rows[0].pending) || 0,
+      appointmentsByDay
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Statistics retrieved successfully",
+      data: statistics
+    });
+  } catch (error) {
+    console.error("Error fetching statistics:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+});
+
 visitRoutes.get("/patient/pending", async (req, res) => {
   try {
     const { patientId } = req.query; // Assuming patientId is passed as a query parameter e.g., /patient/pending?patientId=123
@@ -311,121 +443,60 @@ visitRoutes.post("/", async (req, res) => {
   }
 });
 
-visitRoutes.put("/updateStatus/:patientId", async (req, res) => {
+visitRoutes.put("/:visitId/status", async (req, res) => {
   try {
-    const { patientId } = req.params;
-    const { doctorId, dateOfVisit, visitStatus, reportId, doctorRemarks } =
-      req.body;
-
-    if (!patientId || !doctorId || !visitStatus || !dateOfVisit) {
+    const { visitId } = req.params;
+    const { status } = req.body;
+    
+    if (!status || !['pending', 'visited', 'missed', 'cancelled'].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid field provided",
+        message: "Invalid status provided. Must be pending, visited, missed, or cancelled."
       });
     }
-
-    if (visitStatus === "visited" && (!reportId || !doctorRemarks)) {
+    
+    // Parse the visit ID into its components
+    const visitComponents = visitId.split('-');
+    if (visitComponents.length !== 3) {
       return res.status(400).json({
         success: false,
-        message: "Report Id and remarks needed to mark visited",
+        message: "Invalid visit ID format"
       });
     }
-
-    const findAppointmentQuery = await pool.query(
+    
+    const [patientId, doctorId, dateString] = visitComponents;
+    
+    // Update the visit status
+    const updateQuery = await pool.query(
       `
-      SELECT * 
-      FROM VISIT
-      WHERE patient_id=$1 AND doctor_id=$2 AND date_of_visit=$3
+      UPDATE visit 
+      SET visit_status = $1
+      WHERE patient_id = $2 AND doctor_id = $3 AND date_of_visit = $4
+      RETURNING *
       `,
-      [patientId, doctorId, dateOfVisit]
+      [status, patientId, doctorId, dateString]
     );
-
-    if (findAppointmentQuery.rowCount === 0) {
+    
+    if (updateQuery.rowCount === 0) {
       return res.status(404).json({
         success: false,
-        message: "No appointment found to update",
+        message: "Visit not found"
       });
     }
-
-    if (visitStatus === "visited") {
-      const latestReportQuery = await pool.query(`
-        SELECT report_id
-        FROM report
-        ORDER BY report_id
-        DESC
-        LIMIT 1
-        `);
-
-      let newReportId;
-
-      if (latestReportQuery.rowCount === 0) {
-        newReportId = "R0000000001";
-      } else {
-        nextNumericalPart =
-          parseInt(latestReportQuery.rows[0].report_id.substring(1)) + 1;
-        newReportId = `R${nextNumericalPart.toString().padStart(10, "0")}`;
-      }
-
-      const createReportQuery = await pool.query(
-        `
-        INSERT INTO report (report_id, patient_id, doctor_id, date_of_visit, doctor_remarks)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *
-        `[(newReportId, patientId, doctorId, dateOfVisit, doctorRemarks)]
-      );
-
-      if (createReportQuery.rowCount === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "Report creation failed",
-        });
-      }
-
-      const updateAppointmentQuery = await pool.query(
-        `
-        UPDATE visit
-        SET visit_status='visited' AND report_id = $1
-        WHERE doctor_id=$2 AND patient_id=$3 AND date_of_visit=$4
-        RETURNING *
-        `,
-        [newReportId, doctorId, patientId, dateOfVisit]
-      );
-
-      if (updateAppointmentQuery.rowCount === 0) {
-        return res.status(401).json({
-          success: false,
-          message: "Appointment update failed",
-        });
-      }
-      return res.status(200).json({
-        success: true,
-        message: "Appointment updated",
-        data: updateAppointmentQuery.rows[0],
-      });
-    } else {
-      const updateAppointmentQuery = await pool.query(
-        `
-        UPDATE visit
-        SET visit_status ='visited'
-        WHERE doctor_id=$1 AND patient_id=$2 AND date_of_visit=$3
-        RETURNING *
-        `,
-        [doctorId, patientId, dateOfVisit]
-      );
-
-      if (updateAppointmentQuery.rowCount === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "Update failed",
-        });
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Appointment updated",
-        data: updateAppointmentQuery.rows[0],
-      });
-    }
-  } catch (error) {}
+    
+    return res.status(200).json({
+      success: true,
+      message: `Visit status updated to ${status} successfully`,
+      data: updateQuery.rows[0]
+    });
+  } catch (error) {
+    console.error("Error updating visit status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message
+    });
+  }
 });
+
 export default visitRoutes;

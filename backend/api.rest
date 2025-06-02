@@ -98,7 +98,7 @@ Content-Type: application/json
 GET http://localhost:5001/visits/doctor/d001/allPending
 
 ###
-GET http://localhost:5001/visits/doctor/d004/today
+GET http://localhost:5001/visits/doctor/d001/today
 
 ###
 GET http://localhost:5001/visits/
@@ -122,4 +122,3 @@ GET http://localhost:5001/reports?patientId=p00001
 GET http://localhost:5001/visits/patient/pending?patientId=p00001
 
 ###
-

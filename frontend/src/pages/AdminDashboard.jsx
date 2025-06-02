@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import SERVER_URL from "../lib/constants";
 import "../styles/Dashboard.css";
 import "../styles/AdminDashboard.css";
+import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, Filler } from 'chart.js';
+import { Pie, Bar, Line } from 'react-chartjs-2';
+
+// Register ChartJS components
+ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("patientServices");
@@ -11,6 +16,29 @@ export default function AdminDashboard() {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [statistics, setStatistics] = useState({
+    patientStats: {
+      totalPatients: 0,
+      patientsByGender: {},
+      patientsByBloodGroup: {},
+      patientsByAgeGroup: {},
+      recentlyAddedPatients: []
+    },
+    doctorStats: {
+      totalDoctors: 0,
+      availableDoctors: 0,
+      doctorsBySpecialization: {},
+      doctorsByGender: {}
+    },
+    visitStats: {
+      totalVisits: 0,
+      visitsByStatus: {},
+      visitsByDoctor: {},
+      visitsByDay: {},
+      visitsByMonth: {},
+      recentVisits: []
+    }
+  });
 
   const [patientForm, setPatientForm] = useState({
     patientName: "",
@@ -51,6 +79,8 @@ export default function AdminDashboard() {
       fetchPatients();
     } else if (activeTab === "doctorServices") {
       fetchDoctors();
+    } else if (activeTab === "statistics") {
+      fetchStatistics();
     }
   }, [activeTab, navigate]);
 
@@ -86,6 +116,37 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStatistics = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all statistics in parallel
+      const [patientStatsResponse, doctorStatsResponse, visitStatsResponse] = await Promise.all([
+        fetch(`${SERVER_URL}/admin/statistics/patients`),
+        fetch(`${SERVER_URL}/admin/statistics/doctors`),
+        fetch(`${SERVER_URL}/admin/statistics/visits`)
+      ]);
+
+      if (!patientStatsResponse.ok || !doctorStatsResponse.ok || !visitStatsResponse.ok) {
+        throw new Error("Failed to fetch statistics data");
+      }
+
+      const patientStats = await patientStatsResponse.json();
+      const doctorStats = await doctorStatsResponse.json();
+      const visitStats = await visitStatsResponse.json();
+
+      setStatistics({
+        patientStats: patientStats.data,
+        doctorStats: doctorStats.data,
+        visitStats: visitStats.data
+      });
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
     } finally {
       setLoading(false);
     }
@@ -296,10 +357,10 @@ Address: ${patient.patient_address || "N/A"}`);
       patientId: patient.patient_id,
       patientName: patient.patient_name || "",
       dateOfBirth: patient.patient_dob ? patient.patient_dob.split("T")[0] : "",
-      gender: patient.patient_gender || "", // Changed from patient.gender
-      contactNumber: patient.patient_contact || "", // Changed from patient.contact_number
-      address: patient.patient_address || "", // Changed from patient.address
-      bloodGroup: patient.patient_blood_group || "", // Changed from patient.blood_group
+      gender: patient.patient_gender || "",
+      contactNumber: patient.patient_contact || "", 
+      address: patient.patient_address || "", 
+      bloodGroup: patient.patient_blood_group || "", 
       height: patient.patient_height || "",
       weight: patient.patient_weight || "",
     });
@@ -409,6 +470,108 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
     navigate("/");
   };
 
+  // Prepare chart data for patient statistics
+  const patientGenderChartData = {
+    labels: Object.keys(statistics.patientStats.patientsByGender || {}),
+    datasets: [
+      {
+        label: 'Patients by Gender',
+        data: Object.values(statistics.patientStats.patientsByGender || {}),
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)'
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const patientBloodGroupChartData = {
+    labels: Object.keys(statistics.patientStats.patientsByBloodGroup || {}),
+    datasets: [
+      {
+        label: 'Patients by Blood Group',
+        data: Object.values(statistics.patientStats.patientsByBloodGroup || {}),
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(153, 102, 255, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+          'rgba(199, 199, 199, 0.6)',
+          'rgba(83, 102, 255, 0.6)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const patientAgeGroupChartData = {
+    labels: Object.keys(statistics.patientStats.patientsByAgeGroup || {}),
+    datasets: [
+      {
+        label: 'Patients by Age Group',
+        data: Object.values(statistics.patientStats.patientsByAgeGroup || {}),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // Prepare chart data for doctor statistics
+  const doctorSpecializationChartData = {
+    labels: Object.keys(statistics.doctorStats.doctorsBySpecialization || {}),
+    datasets: [
+      {
+        label: 'Doctors by Specialization',
+        data: Object.values(statistics.doctorStats.doctorsBySpecialization || {}),
+        backgroundColor: 'rgba(153, 102, 255, 0.6)',
+        borderColor: 'rgba(153, 102, 255, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // Prepare chart data for visit statistics
+  const visitStatusChartData = {
+    labels: Object.keys(statistics.visitStats.visitsByStatus || {}),
+    datasets: [
+      {
+        label: 'Visits by Status',
+        data: Object.values(statistics.visitStats.visitsByStatus || {}),
+        backgroundColor: [
+          'rgba(255, 206, 86, 0.6)', // pending
+          'rgba(75, 192, 192, 0.6)', // visited
+          'rgba(255, 99, 132, 0.6)', // missed
+          'rgba(54, 162, 235, 0.6)', // cancelled
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const visitMonthlyChartData = {
+    labels: Object.keys(statistics.visitStats.visitsByMonth || {}),
+    datasets: [
+      {
+        label: 'Visits by Month',
+        data: Object.values(statistics.visitStats.visitsByMonth || {}),
+        fill: true,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        tension: 0.1
+      },
+    ],
+  };
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -416,7 +579,6 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
         <h1>Admin Dashboard</h1>
         <p>Manage hospital resources</p>
         </div>
-        {/* <div className="logout-container"> */}
         <button className="logout-button" onClick={handleLogout}>
           <i className="fas fa-sign-out-alt"></i> Logout
         </button>
@@ -438,6 +600,12 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
           onClick={() => setActiveTab("doctorServices")}
         >
           Doctor Services
+        </button>
+        <button
+          className={`tab-button ${activeTab === "statistics" ? "active" : ""}`}
+          onClick={() => setActiveTab("statistics")}
+        >
+          Statistics
         </button>
       </div>
 
@@ -876,7 +1044,206 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
             </div>
           </div>
         )}
+
+        {activeTab === "statistics" && (
+          <div className="statistics-section">
+            <h2>Hospital Statistics Dashboard</h2>
+            
+            {loading ? (
+              <div className="loading">Loading statistics...</div>
+            ) : (
+              <>
+                {/* Hospital Overview */}
+                <div className="stats-overview">
+                  <div className="stat-card">
+                    <h3>Total Patients</h3>
+                    <p className="stat-value">{statistics.patientStats.totalPatients || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Total Doctors</h3>
+                    <p className="stat-value">{statistics.doctorStats.totalDoctors || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Available Doctors</h3>
+                    <p className="stat-value">{statistics.doctorStats.availableDoctors || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Total Visits</h3>
+                    <p className="stat-value">{statistics.visitStats.totalVisits || 0}</p>
+                  </div>
+                </div>
+
+                {/* Patient Statistics */}
+                <div className="stats-section">
+                  <h3>Patient Statistics</h3>
+                  <div className="charts-container">
+                    <div className="chart-wrapper">
+                      <h4>Patients by Gender</h4>
+                      <div className="chart pie-chart">
+                        <Pie data={patientGenderChartData} options={{ responsive: true }} />
+                      </div>
+                    </div>
+                    <div className="chart-wrapper">
+                      <h4>Patients by Blood Group</h4>
+                      <div className="chart pie-chart">
+                        <Pie data={patientBloodGroupChartData} options={{ responsive: true }} />
+                      </div>
+                    </div>
+                    <div className="chart-wrapper">
+                      <h4>Patients by Age Group</h4>
+                      <div className="chart">
+                        <Bar 
+                          data={patientAgeGroupChartData} 
+                          options={{
+                            responsive: true,
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                              }
+                            }
+                          }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Doctor Statistics */}
+                <div className="stats-section">
+                  <h3>Doctor Statistics</h3>
+                  <div className="charts-container">
+                    <div className="chart-wrapper">
+                      <h4>Doctors by Specialization</h4>
+                      <div className="chart">
+                        <Bar 
+                          data={doctorSpecializationChartData} 
+                          options={{
+                            responsive: true,
+                            indexAxis: 'y',
+                            scales: {
+                              x: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                              }
+                            }
+                          }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visit Statistics */}
+                <div className="stats-section">
+                  <h3>Visit Statistics</h3>
+                  <div className="charts-container">
+                    <div className="chart-wrapper">
+                      <h4>Visits by Status</h4>
+                      <div className="chart pie-chart">
+                        <Pie data={visitStatusChartData} options={{ responsive: true }} />
+                      </div>
+                    </div>
+                    <div className="chart-wrapper">
+                      <h4>Visits by Month</h4>
+                      <div className="chart">
+                        <Line 
+                          data={visitMonthlyChartData} 
+                          options={{
+                            responsive: true,
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                              }
+                            }
+                          }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Activity */}
+                <div className="stats-section">
+                  <h3>Recent Activity</h3>
+                  <div className="activity-container">
+                    <div className="activity-card">
+                      <h4>Recently Added Patients</h4>
+                      {statistics.patientStats.recentlyAddedPatients && 
+                       statistics.patientStats.recentlyAddedPatients.length > 0 ? (
+                        <ul className="activity-list">
+                          {statistics.patientStats.recentlyAddedPatients.map(patient => (
+                            <li key={patient.patient_id} className="activity-item">
+                              <div className="activity-content">
+                                <span className="activity-name">{patient.patient_name}</span>
+                                <span className="activity-details">
+                                  {patient.patient_gender === 'M' ? 'Male' : 
+                                   patient.patient_gender === 'F' ? 'Female' : 'Other'}, 
+                                  {' '}{formatDate(patient.patient_dob)}
+                                </span>
+                              </div>
+                              <span className="activity-time">
+                                {new Date(patient.patient_updated_at).toLocaleDateString()}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="no-data">No recent patients added</p>
+                      )}
+                    </div>
+
+                    <div className="activity-card">
+                      <h4>Recent Visits</h4>
+                      {statistics.visitStats.recentVisits && 
+                       statistics.visitStats.recentVisits.length > 0 ? (
+                        <ul className="activity-list">
+                          {statistics.visitStats.recentVisits.map(visit => (
+                            <li key={`${visit.patient_id}-${visit.doctor_id}-${visit.date_of_visit}`} className="activity-item">
+                              <div className="activity-content">
+                                <span className="activity-name">
+                                  {visit.patient_name} → Dr. {visit.doctor_name}
+                                </span>
+                                <span className="activity-details">
+                                  {visit.visit_reason}
+                                </span>
+                              </div>
+                              <span className={`status-badge ${getStatusClass(visit.visit_status)}`}>
+                                {visit.visit_status}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="no-data">No recent visits</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
+  
+  // Helper function for status classes
+  function getStatusClass(status) {
+    if (!status) return "";
+    
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "status-pending";
+      case "visited":
+        return "status-visited";
+      case "missed":
+        return "status-missed";
+      case "cancelled":
+        return "status-cancelled";
+      default:
+        return "";
+    }
+  }
 }

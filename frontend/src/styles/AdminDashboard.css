@@ -382,3 +382,156 @@
 .logout-container .logout-button {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
+
+/* Statistics Tab Styles */
+.statistics-section {
+  padding: 20px;
+}
+
+.stats-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-width: 180px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  color: #666;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.stats-section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.stats-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eaeaea;
+  color: #2c3e50;
+}
+
+.charts-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.chart-wrapper {
+  flex: 1;
+  min-width: 300px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.chart-wrapper h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+.chart {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pie-chart {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.activity-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.activity-card {
+  flex: 1;
+  min-width: 300px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.activity-card h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eaeaea;
+  color: #333;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-name {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.activity-details {
+  font-size: 0.9em;
+  color: #7f8c8d;
+  margin-top: 4px;
+}
+
+.activity-time {
+  color: #95a5a6;
+  font-size: 0.85em;
+}
+
+.no-data {
+  color: #7f8c8d;
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}

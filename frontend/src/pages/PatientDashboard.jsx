@@ -364,7 +364,7 @@ export default function PatientDashboard() {
                     </div>
                     <div className="record-details">
                       <p>
-                        <strong>Doctor:</strong> {report.doctor_name}
+                        <strong>Doctor:</strong> {report.doctor_id}
                       </p>
                       <p>
                         <strong>Visit Date:</strong>{" "}

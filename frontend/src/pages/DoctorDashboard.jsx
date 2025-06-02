@@ -2,11 +2,17 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SERVER_URL from "../lib/constants";
 import "../styles/Dashboard.css";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+
+// Register ChartJS components
+ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function DoctorDashboard() {
   const [activeTab, setActiveTab] = useState("todayAppointments");
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [pastAppointments, setPastAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -21,17 +27,31 @@ export default function DoctorDashboard() {
   const [selectedVisit, setSelectedVisit] = useState(null);
   const [viewingReport, setViewingReport] = useState(null);
   const [fetchingReport, setFetchingReport] = useState(false);
+  const [statistics, setStatistics] = useState({
+    totalAppointments: 0,
+    completedAppointments: 0,
+    missedAppointments: 0,
+    cancelledAppointments: 0,
+    pendingAppointments: 0,
+    appointmentsByDay: {},
+  });
 
   const navigate = useNavigate();
 
+  // Get user data from localStorage
   const userData = JSON.parse(localStorage.getItem("user")) || {};
 
   useEffect(() => {
+    // Check if user is logged in
     if (!userData.doctorId) {
       navigate("/");
       return;
     }
+    
+    // Fetch appointments when component mounts
     fetchAppointments();
+    // Fetch statistics for the statistics tab
+    fetchStatistics();
   }, [navigate, userData.doctorId]);
 
   const fetchAppointments = async () => {
@@ -49,37 +69,38 @@ export default function DoctorDashboard() {
         `${SERVER_URL}/visits/doctor/${userData.doctorId}/upcoming`
       );
 
-      if (!todayResponse.ok) {
-        throw new Error(`HTTP error! Status: ${todayResponse.status}`);
-      }
+      // Fetch past appointments (visited, missed, cancelled)
+      const pastResponse = await fetch(
+        `${SERVER_URL}/visits/doctor/${userData.doctorId}/past`
+      );
 
-      if (!upcomingResponse.ok) {
-        throw new Error(`HTTP error! Status: ${upcomingResponse.status}`);
+      if (!todayResponse.ok || !upcomingResponse.ok || !pastResponse.ok) {
+        throw new Error(`HTTP error! Status: ${todayResponse.status || upcomingResponse.status || pastResponse.status}`);
       }
 
       const todayData = await todayResponse.json();
       const upcomingData = await upcomingResponse.json();
+      const pastData = await pastResponse.json();
 
       if (todayData.success) {
         setTodayAppointments(todayData.data || []);
       } else {
-        console.error(
-          "Failed to fetch today's appointments:",
-          todayData.message
-        );
+        console.error("Failed to fetch today's appointments:", todayData.message);
         setError("Failed to load today's appointments: " + todayData.message);
       }
 
       if (upcomingData.success) {
         setUpcomingAppointments(upcomingData.data || []);
       } else {
-        console.error(
-          "Failed to fetch upcoming appointments:",
-          upcomingData.message
-        );
-        setError(
-          "Failed to load upcoming appointments: " + upcomingData.message
-        );
+        console.error("Failed to fetch upcoming appointments:", upcomingData.message);
+        setError("Failed to load upcoming appointments: " + upcomingData.message);
+      }
+
+      if (pastData.success) {
+        setPastAppointments(pastData.data || []);
+      } else {
+        console.error("Failed to fetch past appointments:", pastData.message);
+        setError("Failed to load past appointments: " + pastData.message);
       }
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -89,16 +110,40 @@ export default function DoctorDashboard() {
     }
   };
 
+  const fetchStatistics = async () => {
+    try {
+      const response = await fetch(
+        `${SERVER_URL}/visits/doctor/${userData.doctorId}/statistics`
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatistics(data.data);
+      } else {
+        console.error("Failed to fetch statistics:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching statistics:", error);
+    }
+  };
+
   const handleCreateReport = (visit) => {
     setSelectedVisit(visit);
     setReportForm({
-      visitId: visit.visit_id || "",
-      patientId: visit.patient_id || "",
+      visitId: visit.visit_id,
+      patientId: visit.patient_id,
       remarks: "",
       prescription: "",
       followUpDate: "",
     });
     setShowReportForm(true);
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleReportFormChange = (e) => {
@@ -119,7 +164,9 @@ export default function DoctorDashboard() {
     }
 
     try {
-      const response = await fetch(`${SERVER_URL}/reports`, {
+      setLoading(true);
+      // Create the report
+      const reportResponse = await fetch(`${SERVER_URL}/reports`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -129,34 +176,40 @@ export default function DoctorDashboard() {
           doctorId: userData.doctorId,
           patientId: reportForm.patientId,
           doctorRemarks: reportForm.remarks,
-          prescription: reportForm.prescription,
+          prescription: reportForm.prescription || "",
           followUpDate: reportForm.followUpDate || null,
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!reportResponse.ok) {
+        throw new Error(`HTTP error! Status: ${reportResponse.status}`);
       }
 
-      const data = await response.json();
+      const reportData = await reportResponse.json();
 
-      if (data.success) {
-        // Update visit status to completed
-        await updateVisitStatus(reportForm.visitId, "visited");
-
-        // Show success message
-        setSuccessMessage("Report created successfully!");
-        setTimeout(() => setSuccessMessage(""), 5000);
-
-        // Close form and refresh appointments
-        setShowReportForm(false);
-        fetchAppointments();
+      if (reportData.success) {
+        // Update visit status to visited
+        const statusResponse = await updateVisitStatus(reportForm.visitId, "visited");
+        
+        if (statusResponse.success) {
+          setSuccessMessage("Report created and appointment marked as visited successfully!");
+          setTimeout(() => setSuccessMessage(""), 5000);
+          
+          // Close form and refresh data
+          setShowReportForm(false);
+          await fetchAppointments();
+          await fetchStatistics();
+        } else {
+          setError("Report created but failed to update appointment status: " + statusResponse.message);
+        }
       } else {
-        setError(data.message || "Failed to create report");
+        setError(reportData.message || "Failed to create report");
       }
     } catch (error) {
       console.error("Error creating report:", error);
-      setError("An error occurred. Please try again.");
+      setError("An error occurred. Please try again: " + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,7 +242,8 @@ export default function DoctorDashboard() {
       if (result.success) {
         setSuccessMessage(`Appointment marked as ${status} successfully!`);
         setTimeout(() => setSuccessMessage(""), 5000);
-        fetchAppointments();
+        await fetchAppointments();
+        await fetchStatistics();
       } else {
         setError(`Failed to mark visit as ${status}: ${result.message || ""}`);
       }
@@ -216,9 +270,7 @@ export default function DoctorDashboard() {
       if (data.success && data.data) {
         setViewingReport(data.data);
       } else {
-        setError(
-          "Could not retrieve report: " + (data.message || "Report not found")
-        );
+        setError("Could not retrieve report: " + (data.message || "Report not found"));
       }
     } catch (error) {
       console.error("Error fetching report:", error);
@@ -276,6 +328,58 @@ export default function DoctorDashboard() {
     navigate("/");
   };
 
+  // Prepare chart data for the statistics tab
+  const statusChartData = {
+    labels: ['Completed', 'Missed', 'Cancelled', 'Pending'],
+    datasets: [
+      {
+        label: 'Appointments by Status',
+        data: [
+          statistics.completedAppointments || 0,
+          statistics.missedAppointments || 0,
+          statistics.cancelledAppointments || 0,
+          statistics.pendingAppointments || 0
+        ],
+        backgroundColor: [
+          'rgba(75, 192, 192, 0.6)',
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 159, 64, 0.6)',
+          'rgba(54, 162, 235, 0.6)'
+        ],
+        borderColor: [
+          'rgba(75, 192, 192, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(255, 159, 64, 1)',
+          'rgba(54, 162, 235, 1)'
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  // Prepare data for appointments by day chart
+  const getDayChartData = () => {
+    if (!statistics.appointmentsByDay) return null;
+    
+    const labels = Object.keys(statistics.appointmentsByDay).sort();
+    const data = labels.map(day => statistics.appointmentsByDay[day]);
+    
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Appointments by Day',
+          data,
+          backgroundColor: 'rgba(153, 102, 255, 0.6)',
+          borderColor: 'rgba(153, 102, 255, 1)',
+          borderWidth: 1,
+        },
+      ],
+    };
+  };
+
+  const dayChartData = getDayChartData();
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -300,10 +404,7 @@ export default function DoctorDashboard() {
       {successMessage && (
         <div className="success-message dashboard-alert">
           {successMessage}
-          <button
-            className="close-success"
-            onClick={() => setSuccessMessage("")}
-          >
+          <button className="close-success" onClick={() => setSuccessMessage("")}>
             ×
           </button>
         </div>
@@ -311,9 +412,7 @@ export default function DoctorDashboard() {
 
       <div className="dashboard-tabs">
         <button
-          className={`tab-button ${
-            activeTab === "todayAppointments" ? "active" : ""
-          }`}
+          className={`tab-button ${activeTab === "todayAppointments" ? "active" : ""}`}
           onClick={() => {
             setActiveTab("todayAppointments");
             fetchAppointments();
@@ -322,12 +421,19 @@ export default function DoctorDashboard() {
           Today's Appointments
         </button>
         <button
-          className={`tab-button ${
-            activeTab === "upcomingAppointments" ? "active" : ""
-          }`}
+          className={`tab-button ${activeTab === "upcomingAppointments" ? "active" : ""}`}
           onClick={() => setActiveTab("upcomingAppointments")}
         >
           Upcoming Appointments
+        </button>
+        <button
+          className={`tab-button ${activeTab === "statistics" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("statistics");
+            fetchStatistics();
+          }}
+        >
+          Appointment Statistics
         </button>
       </div>
 
@@ -412,8 +518,8 @@ export default function DoctorDashboard() {
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="submit-button">
-                    Submit Report
+                  <button type="submit" className="submit-button" disabled={loading}>
+                    {loading ? "Submitting..." : "Submit Report"}
                   </button>
                 </div>
               </form>
@@ -506,10 +612,7 @@ export default function DoctorDashboard() {
                   <tbody>
                     {todayAppointments.map((visit) => (
                       <tr
-                        key={
-                          visit.visit_id ||
-                          `${visit.patient_id}-${visit.date_of_visit}`
-                        }
+                        key={visit.visit_id || `${visit.patient_id}-${visit.date_of_visit}`}
                       >
                         <td>{formatTime(visit.date_of_visit)}</td>
                         <td>{visit.patient_id}</td>
@@ -588,10 +691,7 @@ export default function DoctorDashboard() {
                   <tbody>
                     {upcomingAppointments.map((visit) => (
                       <tr
-                        key={
-                          visit.visit_id ||
-                          `${visit.patient_id}-${visit.date_of_visit}`
-                        }
+                        key={visit.visit_id || `${visit.patient_id}-${visit.date_of_visit}`}
                       >
                         <td>{formatDate(visit.date_of_visit)}</td>
                         <td>{formatTime(visit.date_of_visit)}</td>
@@ -615,6 +715,113 @@ export default function DoctorDashboard() {
                   </tbody>
                 </table>
               </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "statistics" && (
+          <div className="statistics-section">
+            <h2>Appointment Statistics</h2>
+            
+            {loading ? (
+              <div className="loading">Loading statistics...</div>
+            ) : (
+              <>
+                <div className="stats-overview">
+                  <div className="stat-card">
+                    <h3>Total Appointments</h3>
+                    <p className="stat-value">{statistics.totalAppointments || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Completed</h3>
+                    <p className="stat-value stat-completed">{statistics.completedAppointments || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Missed</h3>
+                    <p className="stat-value stat-missed">{statistics.missedAppointments || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Cancelled</h3>
+                    <p className="stat-value stat-cancelled">{statistics.cancelledAppointments || 0}</p>
+                  </div>
+                  <div className="stat-card">
+                    <h3>Pending</h3>
+                    <p className="stat-value stat-pending">{statistics.pendingAppointments || 0}</p>
+                  </div>
+                </div>
+
+                <div className="charts-container">
+                  <div className="chart-wrapper">
+                    <h3>Appointments by Status</h3>
+                    <div className="chart">
+                      <Pie data={statusChartData} options={{ responsive: true }} />
+                    </div>
+                  </div>
+                  
+                  {dayChartData && (
+                    <div className="chart-wrapper">
+                      <h3>Appointments by Day</h3>
+                      <div className="chart">
+                        <Bar 
+                          data={dayChartData} 
+                          options={{
+                            responsive: true,
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 }
+                              }
+                            }
+                          }} 
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="past-appointments">
+                  <h3>Recent Past Appointments</h3>
+                  {pastAppointments.length === 0 ? (
+                    <div className="no-data">No past appointments found.</div>
+                  ) : (
+                    <div className="table-container">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Patient</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pastAppointments.slice(0, 5).map((visit) => (
+                            <tr key={visit.visit_id || `${visit.patient_id}-${visit.date_of_visit}`}>
+                              <td>{formatDate(visit.date_of_visit)}</td>
+                              <td>{visit.patient_name || "Unknown"}</td>
+                              <td>
+                                <span className={`status-badge ${getStatusClass(visit.visit_status)}`}>
+                                  {visit.visit_status || "Unknown"}
+                                </span>
+                              </td>
+                              <td>
+                                {visit.visit_status === "visited" && (
+                                  <button
+                                    className="action-button view-report-button"
+                                    onClick={() => handleViewReport(visit.visit_id)}
+                                  >
+                                    View Report
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}
