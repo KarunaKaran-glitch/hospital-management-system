@@ -685,7 +685,7 @@ Status: ${doctor.doctor_is_available ? "Available" : "Unavailable"}`);
                         type="text"
                         id="doctorName"
                         name="doctorName"
-                        placeholder="Dr. Jane Smith"
+                        placeholder="Dr. Doctor Name"
                         value={doctorForm.doctorName}
                         onChange={handleDoctorFormChange}
                       />
